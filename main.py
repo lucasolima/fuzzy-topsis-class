@@ -21,7 +21,14 @@ def main():
     system_data.update_from_state(st.session_state)
 
     # 3. Navegação por Abas
-    tab1, tab2, tab3 = st.tabs(["Alternativas e Classes", "Números Fuzzy (Critérios)", "Critérios"])
+    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+        "Alternativas e Classes", 
+        "Números Fuzzy", 
+        "Critérios", 
+        "Avaliações", 
+        "Pesos",
+        "Matriz de Decisão"
+    ])
 
     with tab1:
         render_home()
@@ -32,6 +39,18 @@ def main():
     with tab3:
         from src.ui.criterios_config import render_criterios
         render_criterios()
+
+    with tab4:
+        from src.ui.avaliacoes import render_avaliacoes
+        render_avaliacoes()
+
+    with tab5:
+        from src.ui.pesos_criterios import render_pesos_criterios
+        render_pesos_criterios()
+
+    with tab6:
+        from src.ui.matriz_decisao import render_matriz_decisao
+        render_matriz_decisao()
 
     # Botão de debug no final da navegação global (barra lateral ou rodapé)
     st.markdown("---")
@@ -55,6 +74,12 @@ def main():
         print("\n[ CRITÉRIOS ]")
         import json
         print(json.dumps(system_data.get_criterios(), indent=2, ensure_ascii=False))
+        
+        print("\n[ MATRIZ DE AVALIAÇÕES ]")
+        print(json.dumps(system_data.get_avaliacoes(), indent=2, ensure_ascii=False))
+        
+        print("\n[ PESOS DOS CRITÉRIOS ]")
+        print(json.dumps(system_data.get_pesos_criterios(), indent=2, ensure_ascii=False))
         
         print("="*50 + "\n")
         st.success("Dados printados no console do terminal!")

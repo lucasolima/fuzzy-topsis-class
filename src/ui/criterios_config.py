@@ -26,7 +26,7 @@ def render_criterios():
         for cri_id, cri_data in criterios.items():
             nome_to_show = cri_data['criterio'] if cri_data['criterio'].strip() else "Novo Critério"
             
-            with st.expander(f"{cri_id} - {nome_to_show}", expanded=False):
+            with st.expander(nome_to_show, expanded=False):
                 # Campos principais do critério
                 col_nome, col_tipo, col_del = st.columns([6, 3, 1])
                 

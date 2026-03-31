@@ -9,6 +9,8 @@ class CoreData:
         self.numero_fuzzy_pesos = {}
         self.classes = {}
         self.criterios = {}
+        self.avaliacoes = {}
+        self.pesos_criterios = {}
 
     def update_from_state(self, state_dict: dict):
         """
@@ -40,6 +42,14 @@ class CoreData:
         if "criterios" in state_dict:
             import copy
             self.criterios = copy.deepcopy(state_dict["criterios"])
+            
+        if "avaliacoes" in state_dict:
+            import copy
+            self.avaliacoes = copy.deepcopy(state_dict["avaliacoes"])
+            
+        if "pesos_criterios" in state_dict:
+            import copy
+            self.pesos_criterios = copy.deepcopy(state_dict["pesos_criterios"])
 
     def get_alternativas(self) -> dict:
         return self.alternativas
@@ -55,6 +65,12 @@ class CoreData:
 
     def get_criterios(self) -> dict:
         return self.criterios
+
+    def get_avaliacoes(self) -> dict:
+        return self.avaliacoes
+
+    def get_pesos_criterios(self) -> dict:
+        return self.pesos_criterios
 
 # Instância global que será usada pela regra de negócio
 system_data = CoreData()

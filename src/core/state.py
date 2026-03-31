@@ -155,6 +155,12 @@ def initialize_state():
     if 'next_cri_id' not in st.session_state:
         st.session_state.next_cri_id = 7
 
+    if 'avaliacoes' not in st.session_state:
+        st.session_state.avaliacoes = {}
+
+    if 'pesos_criterios' not in st.session_state:
+        st.session_state.pesos_criterios = {}
+
 def add_alternative():
     """Adiciona uma nova alternativa vazia no final do dicionário."""
     alt_id = f"ALT{st.session_state.next_alt_id}"

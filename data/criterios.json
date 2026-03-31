@@ -1,0 +1,272 @@
+{
+    "CRI1": {
+        "criterio": "Alinhamento estratégico PEI, PDI, PDTIC e EGD",
+        "tipo": "benefício",
+        "descricoes": [
+            {
+                "descricao": "Prioridade explícita da alta gestão",
+                "termo_alternativa": "MA",
+                "termo_peso": "MAI"
+            },
+            {
+                "descricao": "Alinhado a estratégias governamentais (EGD)",
+                "termo_alternativa": "A",
+                "termo_peso": "AI"
+            },
+            {
+                "descricao": "Previsto em PDTIC anterior",
+                "termo_alternativa": "M",
+                "termo_peso": "IM"
+            },
+            {
+                "descricao": "Previsto em planos estratégicos",
+                "termo_alternativa": "B",
+                "termo_peso": "BI"
+            },
+            {
+                "descricao": "Não está previsto em nenhum plano",
+                "termo_alternativa": "MB",
+                "termo_peso": "MBI"
+            }
+        ],
+        "classes": {
+            "CLA1": {
+                "descricao": "Alta Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA2": {
+                "descricao": "Média Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA3": {
+                "descricao": "Baixa Prioridade",
+                "termo_alternativa": ""
+            }
+        }
+    },
+    "CRI2": {
+        "criterio": "Exigência legal / regulatória",
+        "tipo": "benefício",
+        "descricoes": [
+            {
+                "descricao": "Mais de uma exigência legal/regulatória externa",
+                "termo_alternativa": "MA",
+                "termo_peso": "MAI"
+            },
+            {
+                "descricao": "Mais de uma exigência legal / regulatória interna",
+                "termo_alternativa": "A",
+                "termo_peso": "AI"
+            },
+            {
+                "descricao": "Uma exigência legal / regulatória externa",
+                "termo_alternativa": "M",
+                "termo_peso": "IM"
+            },
+            {
+                "descricao": "Uma exigência legal / regulatória interna",
+                "termo_alternativa": "B",
+                "termo_peso": "BI"
+            },
+            {
+                "descricao": "Não é uma exigência legal / regulatória",
+                "termo_alternativa": "MB",
+                "termo_peso": "MBI"
+            }
+        ],
+        "classes": {
+            "CLA1": {
+                "descricao": "Alta Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA2": {
+                "descricao": "Média Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA3": {
+                "descricao": "Baixa Prioridade",
+                "termo_alternativa": ""
+            }
+        }
+    },
+    "CRI3": {
+        "criterio": "Abrangência na comunidade universitária",
+        "tipo": "benefício",
+        "descricoes": [
+            {
+                "descricao": "Universidade e a sociedade",
+                "termo_alternativa": "MA",
+                "termo_peso": "MAI"
+            },
+            {
+                "descricao": "Maioria ou toda a Comunidade Acadêmica",
+                "termo_alternativa": "A",
+                "termo_peso": "AI"
+            },
+            {
+                "descricao": "Maioria dos técnicos-administrativos e/ou a maioria dos discentes e/ou docentes",
+                "termo_alternativa": "M",
+                "termo_peso": "IM"
+            },
+            {
+                "descricao": "Centros, órgãos suplementares ou pró-reitorias isoladamente",
+                "termo_alternativa": "B",
+                "termo_peso": "BI"
+            },
+            {
+                "descricao": "Afeta apenas um departamento ou setor",
+                "termo_alternativa": "MB",
+                "termo_peso": "MBI"
+            }
+        ],
+        "classes": {
+            "CLA1": {
+                "descricao": "Alta Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA2": {
+                "descricao": "Média Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA3": {
+                "descricao": "Baixa Prioridade",
+                "termo_alternativa": ""
+            }
+        }
+    },
+    "CRI4": {
+        "criterio": "Complexidade",
+        "tipo": "custo",
+        "descricoes": [
+            {
+                "descricao": "Baixíssima complexidade (Requisitos claramente definidos e precisos, mínima interdependência entre sistemas, poucas partes interessadas, muito baixo risco de mudanças)",
+                "termo_alternativa": "MB",
+                "termo_peso": "MAI"
+            },
+            {
+                "descricao": "Baixa complexidade (Requisitos relativamente claros e precisos, interdependência limitada entre sistemas, algumas partes interessadas, baixo risco de mudanças)",
+                "termo_alternativa": "B",
+                "termo_peso": "AI"
+            },
+            {
+                "descricao": "Média complexidade (Requisitos moderadamente complexos e claros, interdependência entre sistemas, algumas partes interessadas, risco moderado de mudanças)",
+                "termo_alternativa": "M",
+                "termo_peso": "IM"
+            },
+            {
+                "descricao": "Alta complexidade (requisitos complexos e ambíguos, significativa interdependência entre sistemas, muitas partes interessadas, risco moderado a alto de mudanças)",
+                "termo_alternativa": "A",
+                "termo_peso": "BI"
+            },
+            {
+                "descricao": "Altíssima complexidade (requisitos extremamente complexos e ambíguos, alta interdependência entre sistemas, muitas partes interessadas com necessidades conflitantes, alto risco de mudanças)",
+                "termo_alternativa": "MA",
+                "termo_peso": "MBI"
+            }
+        ],
+        "classes": {
+            "CLA1": {
+                "descricao": "Alta Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA2": {
+                "descricao": "Média Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA3": {
+                "descricao": "Baixa Prioridade",
+                "termo_alternativa": ""
+            }
+        }
+    },
+    "CRI5": {
+        "criterio": "Esforço",
+        "tipo": "custo",
+        "descricoes": [
+            {
+                "descricao": "Baixíssimo esforço (tarefas simples que envolvem um único desenvolvedor por um curto período)",
+                "termo_alternativa": "MB",
+                "termo_peso": "MAI"
+            },
+            {
+                "descricao": "Baixo esforço (customização pontual, envolvendo um desenvolvedor, tarefas claramente definidas e de baixa complexidade)",
+                "termo_alternativa": "B",
+                "termo_peso": "AI"
+            },
+            {
+                "descricao": "Médio esforço (customização que pode envolver um ou mais desenvolvedores, tarefas de complexidade média e algumas interdependências)",
+                "termo_alternativa": "M",
+                "termo_peso": "IM"
+            },
+            {
+                "descricao": "Alto esforço (customização que envolve dois ou mais desenvolvedores, tarefas de complexidade média a alta, requerendo coordenação entre desenvolvedores e possivelmente algumas outras áreas)",
+                "termo_alternativa": "A",
+                "termo_peso": "BI"
+            },
+            {
+                "descricao": "Altíssimo esforço (customização e integração de alta complexidade, envolvendo mais de um setor e dois ou mais desenvolvedores, com interdependências significativas e coordenação necessária entre equipes)",
+                "termo_alternativa": "MA",
+                "termo_peso": "MBI"
+            }
+        ],
+        "classes": {
+            "CLA1": {
+                "descricao": "Alta Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA2": {
+                "descricao": "Média Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA3": {
+                "descricao": "Baixa Prioridade",
+                "termo_alternativa": ""
+            }
+        }
+    },
+    "CRI6": {
+        "criterio": "Tempo total",
+        "tipo": "custo",
+        "descricoes": [
+            {
+                "descricao": "Até 1 mês",
+                "termo_alternativa": "MB",
+                "termo_peso": "MAI"
+            },
+            {
+                "descricao": "De 1 a 3 meses",
+                "termo_alternativa": "B",
+                "termo_peso": "AI"
+            },
+            {
+                "descricao": "De 3 a 6 meses",
+                "termo_alternativa": "M",
+                "termo_peso": "IM"
+            },
+            {
+                "descricao": "De 6 meses a 1 ano",
+                "termo_alternativa": "A",
+                "termo_peso": "BI"
+            },
+            {
+                "descricao": "Mais de um ano",
+                "termo_alternativa": "MA",
+                "termo_peso": "MBI"
+            }
+        ],
+        "classes": {
+            "CLA1": {
+                "descricao": "Alta Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA2": {
+                "descricao": "Média Prioridade",
+                "termo_alternativa": ""
+            },
+            "CLA3": {
+                "descricao": "Baixa Prioridade",
+                "termo_alternativa": ""
+            }
+        }
+    }
+}

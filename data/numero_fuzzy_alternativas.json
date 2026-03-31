@@ -1,0 +1,7 @@
+{
+    "MB": {"descricao": "Muito Baixo", "lmu": [1.0, 1.0, 2.0]},
+    "B": {"descricao": "Baixo", "lmu": [1.0, 2.0, 3.0]},
+    "M": {"descricao": "Médio", "lmu": [2.0, 3.0, 4.0]},
+    "A": {"descricao": "Alto", "lmu": [3.0, 4.0, 5.0]},
+    "MA": {"descricao": "Muito Alto", "lmu": [4.0, 5.0, 6.0]}
+}

@@ -52,37 +52,5 @@ def main():
         from src.ui.matriz_decisao import render_matriz_decisao
         render_matriz_decisao()
 
-    # Botão de debug no final da navegação global (barra lateral ou rodapé)
-    st.markdown("---")
-    if st.button("🖨️ Printar Dados no Console (Debug)", use_container_width=True):
-        print("\n" + "="*50)
-        print("ESTRUTURAS DE DADOS ATUAIS CAPTURADAS NO BACKEND")
-        print("="*50)
-        
-        print("\n[ ALTERNATIVAS ]")
-        print(system_data.get_alternativas())
-        
-        print("\n[ NÚMEROS FUZZY (ALTERNATIVAS) ]")
-        print(system_data.get_numero_fuzzy_alternativas())
-        
-        print("\n[ NÚMEROS FUZZY (PESOS) ]")
-        print(system_data.get_numero_fuzzy_pesos())
-        
-        print("\n[ CLASSES ]")
-        print(system_data.get_classes())
-        
-        print("\n[ CRITÉRIOS ]")
-        import json
-        print(json.dumps(system_data.get_criterios(), indent=2, ensure_ascii=False))
-        
-        print("\n[ MATRIZ DE AVALIAÇÕES ]")
-        print(json.dumps(system_data.get_avaliacoes(), indent=2, ensure_ascii=False))
-        
-        print("\n[ PESOS DOS CRITÉRIOS ]")
-        print(json.dumps(system_data.get_pesos_criterios(), indent=2, ensure_ascii=False))
-        
-        print("="*50 + "\n")
-        st.success("Dados printados no console do terminal!")
-
 if __name__ == "__main__":
     main()

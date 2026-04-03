@@ -21,13 +21,14 @@ def main():
     system_data.update_from_state(st.session_state)
 
     # 3. Navegação por Abas
-    tab1, tab2, tab3, tab4, tab5, tab6 = st.tabs([
+    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
         "Alternativas e Classes", 
         "Números Fuzzy", 
         "Critérios", 
         "Avaliações", 
         "Pesos",
-        "Matriz de Decisão"
+        "Matriz de Decisão",
+        "Matriz Ponderada"
     ])
 
     with tab1:
@@ -51,6 +52,10 @@ def main():
     with tab6:
         from src.ui.matriz_decisao import render_matriz_decisao
         render_matriz_decisao()
+
+    with tab7:
+        from src.ui.matriz_ponderada import render_matriz_ponderada
+        render_matriz_ponderada()
 
 if __name__ == "__main__":
     main()

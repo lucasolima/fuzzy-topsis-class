@@ -11,42 +11,26 @@ def load_data(filename):
         return json.load(f)
 
 def initialize_state():
-    """Inicializa as variáveis de sessão necessárias da aplicação com a estrutura desejada."""
-    if 'alternativas' not in st.session_state:
-        st.session_state.alternativas = load_data('alternativas.json')
-        
-    if 'next_alt_id' not in st.session_state:
-        st.session_state.next_alt_id = 10
+    """Inicializa as variáveis de sessão necessárias da aplicação usando Data-Driven config."""
+    default_states = {
+        'alternativas': lambda: load_data('alternativas.json'),
+        'next_alt_id': 10,
+        'numero_fuzzy_alternativas': lambda: load_data('numero_fuzzy_alternativas.json'),
+        'numero_fuzzy_pesos': lambda: load_data('numero_fuzzy_pesos.json'),
+        'classes': lambda: load_data('classes.json'),
+        'next_fuzzy_alt_id': 1,
+        'next_fuzzy_peso_id': 1,
+        'next_class_id': 4,
+        'criterios': lambda: load_data('criterios.json'),
+        'next_cri_id': 7,
+        'avaliacoes': dict, # equivalente a iniciar com {} dinamicamente
+        'pesos_criterios': dict
+    }
 
-    if 'numero_fuzzy_alternativas' not in st.session_state:
-        st.session_state.numero_fuzzy_alternativas = load_data('numero_fuzzy_alternativas.json')
-    
-    if 'numero_fuzzy_pesos' not in st.session_state:
-        st.session_state.numero_fuzzy_pesos = load_data('numero_fuzzy_pesos.json')
-
-    if 'classes' not in st.session_state:
-        st.session_state.classes = load_data('classes.json')
-    
-    if 'next_fuzzy_alt_id' not in st.session_state:
-        st.session_state.next_fuzzy_alt_id = 1
-
-    if 'next_fuzzy_peso_id' not in st.session_state:
-        st.session_state.next_fuzzy_peso_id = 1
-
-    if 'next_class_id' not in st.session_state:
-        st.session_state.next_class_id = 4
-
-    if 'criterios' not in st.session_state:
-        st.session_state.criterios = load_data('criterios.json')
-
-    if 'next_cri_id' not in st.session_state:
-        st.session_state.next_cri_id = 7
-
-    if 'avaliacoes' not in st.session_state:
-        st.session_state.avaliacoes = {}
-
-    if 'pesos_criterios' not in st.session_state:
-        st.session_state.pesos_criterios = {}
+    for key, default_value in default_states.items():
+        if key not in st.session_state:
+            # Se for callable, invocamos a função para pegar o retorno. Isso impede ler json a toa.
+            st.session_state[key] = default_value() if callable(default_value) else default_value
 
 def add_alternative():
     """Adiciona uma nova alternativa vazia no final do dicionário."""

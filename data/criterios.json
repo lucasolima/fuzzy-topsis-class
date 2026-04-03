@@ -32,15 +32,15 @@
         "classes": {
             "CLA1": {
                 "descricao": "Alta Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "A"
             },
             "CLA2": {
                 "descricao": "Média Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "M"
             },
             "CLA3": {
                 "descricao": "Baixa Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "B"
             }
         }
     },
@@ -77,15 +77,15 @@
         "classes": {
             "CLA1": {
                 "descricao": "Alta Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "A"
             },
             "CLA2": {
                 "descricao": "Média Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "M"
             },
             "CLA3": {
                 "descricao": "Baixa Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "MB"
             }
         }
     },
@@ -122,15 +122,15 @@
         "classes": {
             "CLA1": {
                 "descricao": "Alta Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "A"
             },
             "CLA2": {
                 "descricao": "Média Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "M"
             },
             "CLA3": {
                 "descricao": "Baixa Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "B"
             }
         }
     },
@@ -167,15 +167,15 @@
         "classes": {
             "CLA1": {
                 "descricao": "Alta Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "B"
             },
             "CLA2": {
                 "descricao": "Média Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "M"
             },
             "CLA3": {
                 "descricao": "Baixa Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "MA"
             }
         }
     },
@@ -212,15 +212,15 @@
         "classes": {
             "CLA1": {
                 "descricao": "Alta Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "B"
             },
             "CLA2": {
                 "descricao": "Média Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "M"
             },
             "CLA3": {
                 "descricao": "Baixa Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "MA"
             }
         }
     },
@@ -257,15 +257,15 @@
         "classes": {
             "CLA1": {
                 "descricao": "Alta Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "MB"
             },
             "CLA2": {
                 "descricao": "Média Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "M"
             },
             "CLA3": {
                 "descricao": "Baixa Prioridade",
-                "termo_alternativa": ""
+                "termo_alternativa": "MA"
             }
         }
     }

@@ -17,6 +17,55 @@ def main():
     # 2. Inicializa gerência de estado (regras e dados visuais)
     initialize_state()
 
+    # Preenchimento Automático (Botão)
+    with st.sidebar:
+        st.header("Ferramentas")
+        if st.button("Preencher Dados de Avaliação"):
+            avaliacoes_iniciais = {
+                "ALT1": ["A", "MB", "A", "MB", "M", "B"],
+                "ALT2": ["M", "B", "B", "B", "M", "A"],
+                "ALT3": ["M", "MB", "A", "MB", "B", "B"],
+                "ALT4": ["M", "A", "M", "MB", "A", "M"],
+                "ALT5": ["M", "MB", "A", "MB", "B", "B"],
+                "ALT6": ["M", "B", "M", "MB", "B", "A"],
+                "ALT7": ["M", "A", "A", "B", "B", "B"],
+                "ALT8": ["A", "MB", "MA", "A", "A", "M"],
+                "ALT9": ["M", "MA", "M", "A", "A", "A"]
+            }
+            pesos_iniciais = ["AI", "MAI", "IM", "BI", "BI", "MAI"]
+            
+            criterios = st.session_state.get("criterios", {})
+            cri_keys = list(criterios.keys())
+            
+            # Preencher avaliacoes
+            if "avaliacoes" not in st.session_state:
+                st.session_state.avaliacoes = {}
+                
+            for alt_id, valores in avaliacoes_iniciais.items():
+                if alt_id not in st.session_state.avaliacoes:
+                    st.session_state.avaliacoes[alt_id] = {}
+                for i, val in enumerate(valores):
+                    if i < len(cri_keys):
+                        cri_id = cri_keys[i]
+                        for d in criterios[cri_id].get("descricoes", []):
+                            if d.get("termo_alternativa") == val:
+                                st.session_state.avaliacoes[alt_id][cri_id] = d["descricao"]
+                                break
+                                
+            # Preencher pesos
+            if "pesos_criterios" not in st.session_state:
+                st.session_state.pesos_criterios = {}
+                
+            pesos_fuzzy = st.session_state.get("numero_fuzzy_pesos", {})
+            for i, p in enumerate(pesos_iniciais):
+                if i < len(cri_keys):
+                    cri_id = cri_keys[i]
+                    if p in pesos_fuzzy:
+                        st.session_state.pesos_criterios[cri_id] = pesos_fuzzy[p]["descricao"]
+                        
+            st.success("Dados preenchidos com sucesso!")
+            st.rerun()
+
     # 2.1 Sincroniza estado da interface com a camada de regras de negócio estática
     system_data.update_from_state(st.session_state)
 

@@ -12,7 +12,8 @@ class FTopsisService:
         avaliacoes: dict,
         fuzzy_alternativas: dict,
         pesos_criterios: dict = None,
-        fuzzy_pesos: dict = None
+        fuzzy_pesos: dict = None,
+        classes: dict = None
     ):
         self.criterios = criterios
         self.alternativas = alternativas
@@ -20,6 +21,7 @@ class FTopsisService:
         self.fuzzy_alternativas = fuzzy_alternativas
         self.pesos_criterios = pesos_criterios or {}
         self.fuzzy_pesos = fuzzy_pesos or {}
+        self.classes = classes or {}
 
     def _get_fuzzy_value_for_evaluation(self, cri_id: str, descricao_selecionada: str) -> list[float]:
         """
@@ -58,33 +60,56 @@ class FTopsisService:
                 
         return matrix
 
-    def normalize_matrix(self, matrix: dict) -> dict:
+    def build_classes_matrix(self) -> dict:
         """
-        Aplica a normalização do F-TOPSIS à matriz bruta extraída.
+        Constrói a matriz de decisão bruta (Classes x Critérios) com os valores fuzzy.
+        Retorna:
+            Dict com formato: { class_id: { cri_id: [l, m, u] } }
+        """
+        matrix = {}
+        for class_id in self.classes.keys():
+            matrix[class_id] = {}
+            for cri_id, cri_data in self.criterios.items():
+                # Busca o termo linguístico da classe para esse critério
+                termo = cri_data.get("classes", {}).get(class_id, {}).get("termo_alternativa")
+                fuzzy_val = None
+                if termo and termo in self.fuzzy_alternativas:
+                    fuzzy_val = list(self.fuzzy_alternativas[termo].get("lmu"))
+                matrix[class_id][cri_id] = fuzzy_val
+        return matrix
+
+    def normalize_matrix(self, matrix: dict, ideal_values: dict = None) -> (dict, dict):
+        """
+        Aplica a normalização F-TOPSIS à matriz bruta extraída.
         Leva em consideração se o critério é de "benefício" ou "custo".
+        Se ideal_values não for fornecido, calcula a partir da própria matrix.
+        Retorna: (matriz_normalizada, ideal_values_calculados)
         """
-        # 1. Encontrar o valor ideal de cada critério U*_j (benefício) e L-_j (custo)
-        ideal_values = {}
-        for cri_id, cri_data in self.criterios.items():
-            tipo = cri_data.get("tipo", "benefício").lower()
-            
-            # Coleta os valores fuzzy preenchidos para este critério
-            valores_criterio = [matrix[alt_id][cri_id] for alt_id in self.alternativas if matrix[alt_id].get(cri_id)]
-            
-            if not valores_criterio:
-                continue
+        if ideal_values is None:
+            # 1. Encontrar o valor ideal de cada critério U*_j (benefício) e L-_j (custo)
+            ideal_values = {}
+            for cri_id, cri_data in self.criterios.items():
+                tipo = cri_data.get("tipo", "benefício").lower()
                 
-            if tipo == "benefício":
-                # Para benefício, buscamos o máximo limite superior (índice 2: 'u')
-                ideal_values[cri_id] = max(v[2] for v in valores_criterio)
-            else: # custo
-                # Para custo, buscamos o mínimo limite inferior (índice 0: 'l')
-                ideal_values[cri_id] = min(v[0] for v in valores_criterio)
+                # Coleta os valores fuzzy preenchidos para este critério (apenas os válidos)
+                valores_criterio = []
+                for entity_id in matrix:
+                    val = matrix[entity_id].get(cri_id)
+                    if val is not None:
+                        valores_criterio.append(val)
+                
+                if not valores_criterio:
+                    continue
+                    
+                if tipo == "benefício":
+                    ideal_values[cri_id] = max(v[2] for v in valores_criterio)
+                else: # custo
+                    ideal_values[cri_id] = min(v[0] for v in valores_criterio)
 
         # 2. Computar a divisão criando a Nova Matriz R_ij
         normalized_matrix = copy.deepcopy(matrix)
 
-        for alt_id, scores in matrix.items():
+        for ent_id, scores in matrix.items():
             for cri_id, lmu_val in scores.items():
                 if not lmu_val:
                     continue # Célula vazia / não avaliada
@@ -112,9 +137,41 @@ class FTopsisService:
                         round(ideal_val / l, 4) if l != 0 else 0.0
                     ]
                     
-                normalized_matrix[alt_id][cri_id] = r_ij
+                normalized_matrix[ent_id][cri_id] = r_ij
                 
-        return normalized_matrix
+        return normalized_matrix, ideal_values
+
+    def get_global_ideal_values(self, matrix_alts: dict, matrix_classes: dict) -> dict:
+        """
+        Calcula os valores ideais (U*_j e L-_j) combinando alternativas e classes
+        para garantir que todas sejam agrupadas sob o mesmo referencial.
+        """
+        ideal_values = {}
+        for cri_id, cri_data in self.criterios.items():
+            tipo = cri_data.get("tipo", "benefício").lower()
+            
+            valores_criterio = []
+            # Coleta valores das alternativas
+            for alt_id in matrix_alts:
+                val = matrix_alts[alt_id].get(cri_id)
+                if val is not None:
+                    valores_criterio.append(val)
+            
+            # Coleta valores das classes
+            for class_id in matrix_classes:
+                val = matrix_classes[class_id].get(cri_id)
+                if val is not None:
+                    valores_criterio.append(val)
+            
+            if not valores_criterio:
+                continue
+                
+            if tipo == "benefício":
+                ideal_values[cri_id] = max(v[2] for v in valores_criterio)
+            else: # custo
+                ideal_values[cri_id] = min(v[0] for v in valores_criterio)
+                
+        return ideal_values
 
     def _get_fuzzy_weight_for_criterion(self, cri_id: str) -> list[float]:
         """

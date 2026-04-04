@@ -16,6 +16,7 @@ def render_matriz_ponderada():
     fuzzy_alternativas = system_data.get_numero_fuzzy_alternativas()
     pesos_criterios = system_data.get_pesos_criterios()
     fuzzy_pesos = system_data.get_numero_fuzzy_pesos()
+    classes = system_data.get_classes()
 
     if not alternativas or not criterios:
         st.warning("É necessário cadastrar alternativas e critérios primeiro.")
@@ -36,17 +37,24 @@ def render_matriz_ponderada():
         avaliacoes=avaliacoes,
         fuzzy_alternativas=fuzzy_alternativas,
         pesos_criterios=pesos_criterios,
-        fuzzy_pesos=fuzzy_pesos
+        fuzzy_pesos=fuzzy_pesos,
+        classes=classes
     )
 
-    # Passo 1: Matriz Bruta Fuzzy
+    # Passo 1: Matrizes Brutas Fuzzy
     matriz_bruta = servico_ftopsis.build_decision_matrix()
+    matriz_bruta_classes = servico_ftopsis.build_classes_matrix()
     
-    # Passo 2: Normalizar Matriz
-    matriz_normalizada = servico_ftopsis.normalize_matrix(matriz_bruta)
+    # Valores ideais globais
+    ideal_values = servico_ftopsis.get_global_ideal_values(matriz_bruta, matriz_bruta_classes)
+    
+    # Passo 2: Normalizar Matrizes (Alternativas e Classes)
+    matriz_normalizada, _ = servico_ftopsis.normalize_matrix(matriz_bruta, ideal_values)
+    matriz_normalizada_classes, _ = servico_ftopsis.normalize_matrix(matriz_bruta_classes, ideal_values)
     
     # Passo 3: Ponderar a Matriz Normalizada
     matriz_ponderada = servico_ftopsis.weight_matrix(matriz_normalizada)
+    matriz_ponderada_classes = servico_ftopsis.weight_matrix(matriz_normalizada_classes)
 
     # Tabela 1: Resumo dos Pesos dos Critérios
     st.subheader("Pesos dos Critérios Aplicados")
@@ -60,7 +68,7 @@ def render_matriz_ponderada():
     st.dataframe(pd.DataFrame(pesos_data), use_container_width=True, hide_index=True)
 
     # Tabela 2: Matriz Ponderada
-    st.subheader("Valores Ponderados (V_ij)")
+    st.subheader("Valores Ponderados (V_ij) das Alternativas")
     matriz_data_rows = []
 
     for alt_id, alt_nome in alternativas.items():
@@ -82,11 +90,31 @@ def render_matriz_ponderada():
     df_matriz_pond = pd.DataFrame(matriz_data_rows)
     st.dataframe(df_matriz_pond, use_container_width=True, hide_index=True)
 
-    with st.expander("Ver Matriz Normalizada (Sem os Pesos)"):
+    # Tabela 3: Matriz Ponderada das Classes
+    st.subheader("Valores Ponderados (V_ij) dos Perfis das Classes (Referências)")
+    classes_data_rows = []
+    
+    for class_id, class_data in classes.items():
+        row = {"Classe/Perfil": class_data.get('descricao', class_id)}
+        for cri_id, cri_data in criterios.items():
+            nome_cri = cri_data.get('criterio', cri_id)
+            lmu_val = matriz_ponderada_classes.get(class_id, {}).get(cri_id)
+            
+            if lmu_val:
+                l, m, u = lmu_val
+                row[nome_cri] = f"({l:.4f}, {m:.4f}, {u:.4f})"
+            else:
+                row[nome_cri] = "-"
+        classes_data_rows.append(row)
+        
+    df_classes_pond = pd.DataFrame(classes_data_rows)
+    st.dataframe(df_classes_pond, use_container_width=True, hide_index=True)
+
+    with st.expander("Ver Matriz Normalizada (Sem os Pesos) - Alternativas e Classes"):
         st.markdown("Esta tabela apresenta os números normalizados antes da multiplicação pelos pesos.")
         matriz_norm_rows = []
         for alt_id, alt_nome in alternativas.items():
-            row_norm = {"Alternativa": f"{alt_nome}"}
+            row_norm = {"Referência/Alternativa": f"[ALT] {alt_nome}"}
             for cri_id, cri_data in criterios.items():
                 nome_cri = cri_data.get('criterio', cri_id)
                 lmu_norm = matriz_normalizada.get(alt_id, {}).get(cri_id)
@@ -95,5 +123,16 @@ def render_matriz_ponderada():
                 else:
                     row_norm[nome_cri] = "-"
             matriz_norm_rows.append(row_norm)
-        
+            
+        for class_id, class_data in classes.items():
+            row_norm = {"Referência/Alternativa": f"[CLA] {class_data.get('descricao', class_id)}"}
+            for cri_id, cri_data in criterios.items():
+                nome_cri = cri_data.get('criterio', cri_id)
+                lmu_norm = matriz_normalizada_classes.get(class_id, {}).get(cri_id)
+                if lmu_norm:
+                    row_norm[nome_cri] = f"({lmu_norm[0]:.4f}, {lmu_norm[1]:.4f}, {lmu_norm[2]:.4f})"
+                else:
+                    row_norm[nome_cri] = "-"
+            matriz_norm_rows.append(row_norm)
+            
         st.dataframe(pd.DataFrame(matriz_norm_rows), use_container_width=True, hide_index=True)

@@ -258,3 +258,65 @@ class FTopsisService:
             })
             
         return resultados
+
+    def calculate_distances_ideais(self, matriz_ponderada: dict, solucoes_ideais: list) -> dict:
+        import math
+        resultados_distancias = {}
+        for alt_id, scores in matriz_ponderada.items():
+            resultados_distancias[alt_id] = {}
+            for sol_ideal in solucoes_ideais:
+                label = sol_ideal["label"]
+                valores_ideais = sol_ideal["valores"]
+                
+                soma_dp = 0.0
+                soma_dn = 0.0
+                detalhes_criterios = {}
+                
+                for cri_id, v_ij in scores.items():
+                    if not v_ij:
+                        continue
+                        
+                    val_a, val_b = valores_ideais.get(cri_id, (None, None))
+                    if not val_a or not val_b:
+                        continue
+                        
+                    l_crit, m_crit, u_crit = v_ij
+                    l_sol1, m_sol1, u_sol1 = val_a
+                    l_sol2, m_sol2, u_sol2 = val_b
+                    
+                    dp = math.sqrt(((l_crit - l_sol1)**2 + (m_crit - m_sol1)**2 + (u_crit - u_sol1)**2) / 3.0)
+                    dn = math.sqrt(((l_crit - l_sol2)**2 + (m_crit - m_sol2)**2 + (u_crit - u_sol2)**2) / 3.0)
+                    
+                    detalhes_criterios[cri_id] = {
+                        "d+": round(dp, 4),
+                        "d-": round(dn, 4)
+                    }
+                    soma_dp += dp
+                    soma_dn += dn
+                    
+                resultados_distancias[alt_id][label] = {
+                    "D+": round(soma_dp, 4),
+                    "D-": round(soma_dn, 4),
+                    "criterios": detalhes_criterios
+                }
+                
+        return resultados_distancias
+
+    def calculate_cci_ideais(self, distancias_ideais: dict) -> dict:
+        """
+        Calcula o CCi = D- / (D+ + D-) para cada alternativa em relação a cada agrupamento de referência.
+        Retorna um dicionário: {alt_id: {label: cci_value}}
+        """
+        cci_resultados = {}
+        for alt_id, info_dist in distancias_ideais.items():
+            cci_resultados[alt_id] = {}
+            for label, vals in info_dist.items():
+                dp = vals["D+"]
+                dn = vals["D-"]
+                soma = dp + dn
+                if soma > 0:
+                    cci = round(dn / soma, 4)
+                else:
+                    cci = 0.0
+                cci_resultados[alt_id][label] = cci
+        return cci_resultados

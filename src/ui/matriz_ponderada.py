@@ -156,3 +156,40 @@ def render_matriz_ponderada():
             matriz_norm_rows.append(row_norm)
             
         st.dataframe(pd.DataFrame(matriz_norm_rows), use_container_width=True, hide_index=True)
+
+    # Tabela 5: Distâncias D+ e D- (Alternativas vs Soluções Ideais das Classes)
+    st.subheader("Cálculo das Distâncias (D+ e D-) Mapeadas")
+    st.markdown("Mostra os valores sumariados resultantes do mapeamento de cada alternativa em contraste com cada agrupamento de referência ideal.")
+    
+    distancias_ideais = servico_ftopsis.calculate_distances_ideais(matriz_ponderada, agrupamentos)
+    if distancias_ideais:
+        distancias_rows = []
+        for alt_id, info_dist in distancias_ideais.items():
+            alt_nome = alternativas.get(alt_id, alt_id)
+            for label_combinacao, vals in info_dist.items():
+                distancias_rows.append({
+                    "Alternativa": alt_nome,
+                    "Referência (Classe Ideal)": label_combinacao,
+                    "Distância Positiva (D+)": vals["D+"],
+                    "Distância Negativa (D-)": vals["D-"]
+                })
+        
+        df_distancias = pd.DataFrame(distancias_rows)
+        st.dataframe(df_distancias, use_container_width=True, hide_index=True)
+
+    # Tabela 6: Coeficiente de Proximidade (CCi)
+    st.subheader("Coeficiente de Proximidade (CCi)")
+    st.markdown("Exibe o Coeficiente de Proximidade das alternativas em relação a cada agrupamento de referência das classes.")
+    
+    if distancias_ideais:
+        cci_ideais = servico_ftopsis.calculate_cci_ideais(distancias_ideais)
+        cci_rows = []
+        for alt_id, info_cci in cci_ideais.items():
+            alt_nome = alternativas.get(alt_id, alt_id)
+            row = {"Alternativa": alt_nome}
+            for label_combinacao, cci_val in info_cci.items():
+                row[label_combinacao] = f"{cci_val:.4f}"
+            cci_rows.append(row)
+            
+        df_cci = pd.DataFrame(cci_rows)
+        st.dataframe(df_cci, use_container_width=True, hide_index=True)

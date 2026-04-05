@@ -110,6 +110,26 @@ def render_matriz_ponderada():
     df_classes_pond = pd.DataFrame(classes_data_rows)
     st.dataframe(df_classes_pond, use_container_width=True, hide_index=True)
 
+    # Tabela 4: Agrupamentos Ideais das Referências
+    st.subheader("Configuração da Solução Ideal das Referências")
+    st.markdown("Agrupamento direto entre as linhas das referências da Matriz de Classes, conforme requisitado.")
+    
+    agrupamentos = servico_ftopsis.calculate_ideal_solution_from_classes(matriz_ponderada_classes)
+    if agrupamentos:
+        agrupamentos_rows = []
+        for agr in agrupamentos:
+            row = {"Combinação": agr["label"]}
+            for cri_id, cri_data in criterios.items():
+                nome_cri = cri_data.get('criterio', cri_id)
+                val_a, val_b = agr["valores"].get(cri_id, (None, None))
+                str_a = f"({val_a[0]:.4f}, {val_a[1]:.4f}, {val_a[2]:.4f})" if val_a else "-"
+                str_b = f"({val_b[0]:.4f}, {val_b[1]:.4f}, {val_b[2]:.4f})" if val_b else "-"
+                row[nome_cri] = f"{str_a}  |  {str_b}"
+            agrupamentos_rows.append(row)
+        
+        df_agrupamentos = pd.DataFrame(agrupamentos_rows)
+        st.dataframe(df_agrupamentos, use_container_width=True, hide_index=True)
+
     with st.expander("Ver Matriz Normalizada (Sem os Pesos) - Alternativas e Classes"):
         st.markdown("Esta tabela apresenta os números normalizados antes da multiplicação pelos pesos.")
         matriz_norm_rows = []

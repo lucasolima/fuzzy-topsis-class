@@ -78,7 +78,7 @@ class FTopsisService:
                 matrix[class_id][cri_id] = fuzzy_val
         return matrix
 
-    def normalize_matrix(self, matrix: dict, ideal_values: dict = None) -> (dict, dict):
+    def normalize_matrix(self, matrix: dict, ideal_values: dict = None) -> (dict, dict): # type: ignore
         """
         Aplica a normalização F-TOPSIS à matriz bruta extraída.
         Leva em consideração se o critério é de "benefício" ou "custo".
@@ -215,3 +215,46 @@ class FTopsisService:
                 weighted_matrix[alt_id][cri_id] = v_ij
                 
         return weighted_matrix
+
+    def calculate_ideal_solution_from_classes(self, matriz_classes_ponderada: dict) -> list:
+        """
+        Recebe a matriz ponderada das classes e retorna os agrupamentos:
+        1: Primeira linha com a última
+        2: Segunda linha com a última
+        3: Última linha com a primeira
+        """
+        classes_keys = list(matriz_classes_ponderada.keys())
+        if not classes_keys:
+            return []
+            
+        primeira = classes_keys[0]
+        # Pega a segunda se existir, senão repete a primeira
+        segunda = classes_keys[1] if len(classes_keys) > 1 else primeira
+        ultima = classes_keys[-1]
+        
+        nome_primeira = self.classes.get(primeira, {}).get("descricao", primeira)
+        nome_segunda = self.classes.get(segunda, {}).get("descricao", segunda)
+        nome_ultima = self.classes.get(ultima, {}).get("descricao", ultima)
+        
+        combinacoes = [
+            (nome_primeira, primeira, ultima),
+            (nome_segunda, segunda, ultima),
+            (nome_ultima, ultima, primeira)
+        ]
+        
+        resultados = []
+        for label, a_id, b_id in combinacoes:
+            linha_comb = {}
+            for cri_id in self.criterios.keys():
+                val_a = matriz_classes_ponderada.get(a_id, {}).get(cri_id)
+                val_b = matriz_classes_ponderada.get(b_id, {}).get(cri_id)
+                linha_comb[cri_id] = (val_a, val_b)
+                
+            resultados.append({
+                "label": label,
+                "id_1": a_id,
+                "id_2": b_id,
+                "valores": linha_comb
+            })
+            
+        return resultados

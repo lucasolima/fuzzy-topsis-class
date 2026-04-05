@@ -17,10 +17,32 @@ def main():
     # 2. Inicializa gerência de estado (regras e dados visuais)
     initialize_state()
 
-    # Preenchimento Automático (Botão)
+    # Menu Lateral
     with st.sidebar:
+        st.header("Configuração")
+        
+        secao = st.selectbox("Selecione a Seção:", ["Configuração", "Avaliação", "Classificação"])
+        
+        if secao == "Configuração":
+            menu_selecionado = st.radio(
+                "Opções de Configuração:",
+                ["Alternativas e Classes", "Números Fuzzy", "Critérios"]
+            )
+        elif secao == "Avaliação":
+            menu_selecionado = st.radio(
+                "Opções de Avaliação:",
+                ["Avaliações", "Pesos"]
+            )
+        else:
+            menu_selecionado = st.radio(
+                "Opções de Classificação:",
+                ["Matriz de Decisão", "Resultado"]
+            )
+        
+        st.markdown("---")
+        
         st.header("Ferramentas")
-        if st.button("Preencher Dados de Avaliação"):
+        if st.button("Preencher Dados Amostrais"):
             avaliacoes_iniciais = {
                 "ALT1": ["A", "MB", "A", "MB", "M", "B"],
                 "ALT2": ["M", "B", "B", "B", "M", "A"],
@@ -69,40 +91,30 @@ def main():
     # 2.1 Sincroniza estado da interface com a camada de regras de negócio estática
     system_data.update_from_state(st.session_state)
 
-    # 3. Navegação por Abas
-    tab1, tab2, tab3, tab4, tab5, tab6, tab7 = st.tabs([
-        "Alternativas e Classes", 
-        "Números Fuzzy", 
-        "Critérios", 
-        "Avaliações", 
-        "Pesos",
-        "Matriz de Decisão",
-        "Matriz Ponderada"
-    ])
-
-    with tab1:
+    # 3. Renderização Condicional da Navegação
+    if menu_selecionado == "Alternativas e Classes":
         render_home()
         
-    with tab2:
+    elif menu_selecionado == "Números Fuzzy":
         render_fuzzy_alternatives()
-
-    with tab3:
+        
+    elif menu_selecionado == "Critérios":
         from src.ui.criterios_config import render_criterios
         render_criterios()
-
-    with tab4:
+        
+    elif menu_selecionado == "Avaliações":
         from src.ui.avaliacoes import render_avaliacoes
         render_avaliacoes()
-
-    with tab5:
+        
+    elif menu_selecionado == "Pesos":
         from src.ui.pesos_criterios import render_pesos_criterios
         render_pesos_criterios()
-
-    with tab6:
+        
+    elif menu_selecionado == "Matriz de Decisão":
         from src.ui.matriz_decisao import render_matriz_decisao
         render_matriz_decisao()
-
-    with tab7:
+        
+    elif menu_selecionado == "Resultado":
         from src.ui.matriz_ponderada import render_matriz_ponderada
         render_matriz_ponderada()
 

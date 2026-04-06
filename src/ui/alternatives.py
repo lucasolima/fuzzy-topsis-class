@@ -1,7 +1,7 @@
 import streamlit as st
 from src.core.state import add_alternative, update_alternative, delete_alternative
 
-def render_home():
+def render_alternatives():
     st.header("Parametrização das Alternativas")
     
     st.markdown(

@@ -1,7 +1,7 @@
 import streamlit as st
 from src.core.state import initialize_state
 from src.core.data_repository import system_data
-from src.ui.home import render_home
+from src.ui.alternatives import render_alternatives
 from src.ui.fuzzy_alternatives import render_fuzzy_alternatives
 
 # 1. Configuração da página (deve ser o primeiro comando do app)
@@ -93,7 +93,7 @@ def main():
 
     # 3. Renderização Condicional da Navegação
     if selected_menu == "Alternativas e Classes":
-        render_home()
+        render_alternatives()
         
     elif selected_menu == "Números Fuzzy":
         render_fuzzy_alternatives()

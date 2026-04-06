@@ -58,7 +58,7 @@ def render_evaluations():
         st.markdown("---")
         cols = st.columns([1, 4])
         with cols[0]:
-            submitted = st.form_submit_button("💾 Salvar Avaliações", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("💾 Salvar Avaliações", use_container_width=True)
             
         if submitted:
             for (aid, cid), val in new_evaluations.items():

@@ -86,7 +86,7 @@ def render_criteria_weights():
 
         cols = st.columns([1, 4])
         with cols[0]:
-            submitted = st.form_submit_button("💾 Salvar Pesos", type="primary", use_container_width=True)
+            submitted = st.form_submit_button("💾 Salvar Pesos", use_container_width=True)
             
         if submitted:
             for cid, val in new_weights.items():

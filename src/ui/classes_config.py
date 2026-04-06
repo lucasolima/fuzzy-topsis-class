@@ -49,6 +49,6 @@ def render_classes():
     
     col1, col2 = st.columns([1, 4])
     with col1:
-        if st.button("➕ Adicionar Classe", type="primary", use_container_width=True):
+        if st.button("➕ Adicionar", key="add_class_btn", use_container_width=True):
             add_class()
             st.rerun()

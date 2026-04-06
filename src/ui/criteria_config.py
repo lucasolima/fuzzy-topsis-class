@@ -136,6 +136,6 @@ def render_criteria():
     st.markdown("---")
     col1, col2 = st.columns([1, 4])
     with col1:
-        if st.button("➕ Adicionar Critério", type="primary", use_container_width=True):
+        if st.button("➕ Adicionar", key="add_criteria_btn", use_container_width=True):
             add_criterion()
             st.rerun()

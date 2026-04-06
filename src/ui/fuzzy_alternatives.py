@@ -96,7 +96,7 @@ def render_fuzzy_config_table(dict_name: str, next_id_key: str, prefix: str, tit
     
     col1, col2 = st.columns([1, 4])
     with col1:
-        if st.button(f"➕ Adicionar Termo ({prefix})", key=f"add_btn_{dict_name}", type="primary", use_container_width=True):
+        if st.button("➕ Adicionar", key=f"add_btn_{dict_name}", use_container_width=True):
             add_fuzzy_term(dict_name, next_id_key, prefix=prefix)
             st.rerun()
 

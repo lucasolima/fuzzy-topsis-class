@@ -48,7 +48,7 @@ def render_alternatives():
     
     with col1:
         # Botão com símbolo ➕ para adicionar novo input de alternativa
-        if st.button("➕ Adicionar", type="primary", use_container_width=True):
+        if st.button("➕ Adicionar", key="add_alternative_btn", use_container_width=True):
             add_alternative()
             st.rerun()
 

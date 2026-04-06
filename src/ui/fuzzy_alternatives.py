@@ -44,12 +44,12 @@ def render_fuzzy_config_table(dict_name: str, next_id_key: str, prefix: str, tit
             with col_desc:
                 new_desc = st.text_input(
                     "Descrição", 
-                    value=data["descricao"], 
+                    value=data["description"], 
                     key=f"desc_{k_base}", 
                     label_visibility="collapsed"
                 )
-                if new_desc != data["descricao"]:
-                    update_fuzzy_term_value(dict_name, new_key if new_key != key else key, "descricao", new_desc)
+                if new_desc != data["description"]:
+                    update_fuzzy_term_value(dict_name, new_key if new_key != key else key, "description", new_desc)
             
             with col_l:
                 new_l = st.number_input(
@@ -110,7 +110,7 @@ def render_fuzzy_alternatives():
 
     # Renderiza Bloco 1: Alternativas
     render_fuzzy_config_table(
-        dict_name="numero_fuzzy_alternativas", 
+        dict_name="fuzzy_number_alternatives", 
         next_id_key="next_fuzzy_alt_id", 
         prefix="ALT", 
         title="Termos Linguísticos (Alternativas)"
@@ -120,8 +120,8 @@ def render_fuzzy_alternatives():
     
     # Renderiza Bloco 2: Pesos
     render_fuzzy_config_table(
-        dict_name="numero_fuzzy_pesos", 
-        next_id_key="next_fuzzy_peso_id", 
+        dict_name="fuzzy_number_weights", 
+        next_id_key="next_fuzzy_weight_id", 
         prefix="PESO", 
         title="Termos Linguísticos (Pesos)"
     )

@@ -5,19 +5,19 @@ def render_home():
     st.header("Parametrização das Alternativas")
     
     st.markdown(
-        "Informe ao sistema quais são as alternativas que iremos "
+        "Informe ao sistema quais são as alternatives que iremos "
         "classificar com o algoritmo Fuzzy TOPSIS."
     )
 
     st.subheader("Lista de Alternativas")
 
     # Pegamos o layout da lista atual guardada no state
-    alternativas_atuais = list(st.session_state.alternativas.items())
+    current_alternatives = list(st.session_state.alternatives.items())
     
-    if not alternativas_atuais:
+    if not current_alternatives:
         st.info("Nenhuma alternativa cadastrada. Clique no botão abaixo para adicionar.")
     else:
-        for alt_id, alt_value in alternativas_atuais:
+        for alt_id, alt_value in current_alternatives:
             col_input, col_del = st.columns([10, 1])
             
             with col_input:

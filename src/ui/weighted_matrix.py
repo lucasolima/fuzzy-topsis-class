@@ -3,67 +3,67 @@ import pandas as pd
 from src.core.data_repository import system_data
 from src.services.ftopsis_service import FTopsisService
 
-def render_matriz_ponderada():
+def render_weighted_matrix():
     st.header("Resultado da Classificação")
     st.markdown(
         "A tabela abaixo determina a qual classe/perfil cada alternativa melhor se adequa, "
         "com base no maior nível de proximidade (CCi). O **maior CCi indica a classe ideal**."
     )
 
-    alternativas = system_data.get_alternativas()
-    criterios = system_data.get_criterios()
-    avaliacoes = system_data.get_avaliacoes()
-    fuzzy_alternativas = system_data.get_numero_fuzzy_alternativas()
-    pesos_criterios = system_data.get_pesos_criterios()
-    fuzzy_pesos = system_data.get_numero_fuzzy_pesos()
+    alternatives = system_data.get_alternatives()
+    criteria = system_data.get_criteria()
+    evaluations = system_data.get_evaluations()
+    fuzzy_alternatives = system_data.get_fuzzy_number_alternatives()
+    criteria_weights = system_data.get_criteria_weights()
+    fuzzy_weights = system_data.get_fuzzy_number_weights()
     classes = system_data.get_classes()
 
-    if not alternativas or not criterios:
-        st.warning("É necessário cadastrar alternativas e critérios primeiro.")
+    if not alternatives or not criteria:
+        st.warning("É necessário cadastrar alternatives e critérios primeiro.")
         return
 
-    if not avaliacoes:
+    if not evaluations:
         st.info("Nenhuma avaliação foi preenchida ainda. Vá para a aba de Avaliações.")
         return
         
-    if not pesos_criterios:
+    if not criteria_weights:
         st.info("Nenhum peso definido ainda. Vá para a aba de Pesos.")
         return
 
     # Injeta a dependência no serviço
     servico_ftopsis = FTopsisService(
-        criterios=criterios,
-        alternativas=alternativas,
-        avaliacoes=avaliacoes,
-        fuzzy_alternativas=fuzzy_alternativas,
-        pesos_criterios=pesos_criterios,
-        fuzzy_pesos=fuzzy_pesos,
+        criteria=criteria,
+        alternatives=alternatives,
+        evaluations=evaluations,
+        fuzzy_alternatives=fuzzy_alternatives,
+        criteria_weights=criteria_weights,
+        fuzzy_weights=fuzzy_weights,
         classes=classes
     )
 
     # Passo 1: Matrizes Brutas Fuzzy
-    matriz_bruta = servico_ftopsis.build_decision_matrix()
-    matriz_bruta_classes = servico_ftopsis.build_classes_matrix()
+    raw_matrix = servico_ftopsis.build_decision_matrix()
+    raw_matrix_classes = servico_ftopsis.build_classes_matrix()
     
     # Valores ideais globais
-    ideal_values = servico_ftopsis.get_global_ideal_values(matriz_bruta, matriz_bruta_classes)
+    ideal_values = servico_ftopsis.get_global_ideal_values(raw_matrix, raw_matrix_classes)
     
     # Passo 2: Normalizar Matrizes (Alternativas e Classes)
-    matriz_normalizada, _ = servico_ftopsis.normalize_matrix(matriz_bruta, ideal_values)
-    matriz_normalizada_classes, _ = servico_ftopsis.normalize_matrix(matriz_bruta_classes, ideal_values)
+    normalized_matrix, _ = servico_ftopsis.normalize_matrix(raw_matrix, ideal_values)
+    normalized_matrix_classes, _ = servico_ftopsis.normalize_matrix(raw_matrix_classes, ideal_values)
     
     # Passo 3: Ponderar a Matriz Normalizada
-    matriz_ponderada = servico_ftopsis.weight_matrix(matriz_normalizada)
-    matriz_ponderada_classes = servico_ftopsis.weight_matrix(matriz_normalizada_classes)
+    weighted_matrix = servico_ftopsis.weight_matrix(normalized_matrix)
+    weighted_matrix_classes = servico_ftopsis.weight_matrix(normalized_matrix_classes)
 
-    agrupamentos = servico_ftopsis.calculate_ideal_solution_from_classes(matriz_ponderada_classes)
-    distancias_ideais = servico_ftopsis.calculate_distances_ideais(matriz_ponderada, agrupamentos)
+    agrupamentos = servico_ftopsis.calculate_ideal_solution_from_classes(weighted_matrix_classes)
+    distancias_ideais = servico_ftopsis.calculate_distances_ideais(weighted_matrix, agrupamentos)
     
     if distancias_ideais:
         cci_ideais = servico_ftopsis.calculate_cci_ideais(distancias_ideais)
         cci_rows = []
         for alt_id, info_cci in cci_ideais.items():
-            alt_nome = alternativas.get(alt_id, alt_id)
+            alt_nome = alternatives.get(alt_id, alt_id)
             row = {"Alternativa": alt_nome}
             
             # Identificar a classe com maior CCi
@@ -95,11 +95,11 @@ def render_matriz_ponderada():
 
         st.markdown("---")
         st.header("Ranking")
-        st.markdown("Lista das alternativas avaliadas, ordenadas por sua pontuação (Maior CCi) e classe recomendada.")
+        st.markdown("Lista das alternatives avaliadas, ordenadas por sua pontuação (Maior CCi) e classe recomendada.")
 
         # Dicionário de peso para ordenação das classes
         # Ex: "Alta Prioridade" -> 0, "Média Prioridade" -> 1, "Baixa Prioridade" -> 2
-        classes_order = {c["descricao"]: i for i, c in enumerate(classes.values())}
+        classes_order = {c["description"]: i for i, c in enumerate(classes.values())}
 
         ranking_data = []
         for index, row in df_cci.iterrows():

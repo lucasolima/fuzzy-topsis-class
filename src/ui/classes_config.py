@@ -11,11 +11,11 @@ def render_classes():
     
     st.markdown(
         "Nesta etapa, iremos cadastrar as classes ou perfis de prioridade que serão utilizados "
-        "para classificar as alternativas." 
+        "para classificar as alternatives." 
     )
 
     class_keys = list(st.session_state.classes.keys())
-    termos_disponiveis = list(st.session_state.numero_fuzzy_alternativas.keys())
+    #available_terms = list(st.session_state.fuzzy_number_alternatives.keys())
     
     if not class_keys:
         st.info("Nenhuma classe cadastrada. Clique no botão abaixo para adicionar.")
@@ -32,13 +32,13 @@ def render_classes():
             with col_desc:
                 new_desc = st.text_input(
                     "Descrição Classe", 
-                    value=data["descricao"], 
+                    value=data["description"], 
                     key=f"class_desc_{cid}", 
                     label_visibility="collapsed",
                     placeholder="Ex: Alta Prioridade"
                 )
-                if new_desc != data["descricao"]:
-                    update_class_value(cid, "descricao", new_desc)
+                if new_desc != data["description"]:
+                    update_class_value(cid, "description", new_desc)
 
             with col_del:
                 if st.button("❌", key=f"class_del_{cid}", help=f"Excluir {cid}"):

@@ -4,7 +4,7 @@ def add_fuzzy_term(dict_name: str, next_id_key: str, prefix: str = "NOVO"):
     """Adiciona um novo número fuzzy vazio a um determinado dicionário."""
     term_id = f"{prefix}_{st.session_state[next_id_key]}"
     st.session_state[dict_name][term_id] = {
-        "descricao": "",
+        "description": "",
         "lmu": [0.0, 0.0, 0.0]
     }
     st.session_state[next_id_key] += 1

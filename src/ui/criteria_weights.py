@@ -1,35 +1,35 @@
 import streamlit as st
 
-def render_pesos_criterios():
+def render_criteria_weights():
     st.header("Peso dos Critérios")
     st.markdown(
         "Nesta etapa, defina a importância de cada um dos critérios. "
         "A lista abaixo contém todos os critérios que você cadastrou."
     )
     
-    criterios = st.session_state.get("criterios", {})
-    pesos_fuzzy = st.session_state.get("numero_fuzzy_pesos", {})
+    criteria = st.session_state.get("criteria", {})
+    fuzzy_weights = st.session_state.get("fuzzy_number_weights", {})
     
-    if not criterios:
+    if not criteria:
         st.warning("Nenhum critério cadastrado. Retorne à aba de Critérios.")
         return
         
-    if not pesos_fuzzy:
+    if not fuzzy_weights:
         st.warning("Não há termos linguísticos para pesos cadastrados. Retorne à aba de Números Fuzzy.")
         return
 
     # Garante a inicialização segura de pesos no session_state
-    if "pesos_criterios" not in st.session_state:
-        st.session_state.pesos_criterios = {}
+    if "criteria_weights" not in st.session_state:
+        st.session_state.criteria_weights = {}
         
     # Extrair apenas a descrição do dicionário de pesos para apresentar ao usuário
-    opcoes_pesos = [dados["descricao"] for param, dados in pesos_fuzzy.items()]
+    weights_options = [dados["description"] for param, dados in fuzzy_weights.items()]
     
     # Prepara a lista de chaves de critérios para iterarmos aos pares
-    cri_keys = list(criterios.keys())
+    cri_keys = list(criteria.keys())
     
     with st.form("form_pesos"):
-        novos_pesos = {}
+        new_weights = {}
         
         # Itera de 2 em 2
         for i in range(0, len(cri_keys), 2):
@@ -37,50 +37,50 @@ def render_pesos_criterios():
             
             # Primeiro da dupla (sempre existirá dentro do loop normal)
             cri_id_1 = cri_keys[i]
-            cri_data_1 = criterios[cri_id_1]
-            nome_cri_1 = cri_data_1.get('criterio', 'Critério Sem Nome')
+            cri_data_1 = criteria[cri_id_1]
+            nome_cri_1 = cri_data_1.get("criterion", 'Critério Sem Nome')
             
             with col1:
                 st.subheader(nome_cri_1)
-                valor_atual_1 = st.session_state.pesos_criterios.get(cri_id_1, None)
-                if valor_atual_1 not in opcoes_pesos:
+                valor_atual_1 = st.session_state.criteria_weights.get(cri_id_1, None)
+                if valor_atual_1 not in weights_options:
                     valor_atual_1 = None
                     
-                idx_atual_1 = opcoes_pesos.index(valor_atual_1) if valor_atual_1 is not None else None
+                idx_atual_1 = weights_options.index(valor_atual_1) if valor_atual_1 is not None else None
                 
                 novo_peso_1 = st.selectbox(
                     label=f"Peso para o critério: {nome_cri_1}",
-                    options=opcoes_pesos,
+                    options=weights_options,
                     index=idx_atual_1,
                     placeholder="Selecione um nível de importância...",
                     key=f"peso_{cri_id_1}",
                     label_visibility="collapsed"
                 )
-                novos_pesos[cri_id_1] = novo_peso_1
+                new_weights[cri_id_1] = novo_peso_1
 
             # Segundo da dupla (só se houver, caso quantidade ímpar)
             if i + 1 < len(cri_keys):
                 cri_id_2 = cri_keys[i+1]
-                cri_data_2 = criterios[cri_id_2]
-                nome_cri_2 = cri_data_2.get('criterio', 'Critério Sem Nome')
+                cri_data_2 = criteria[cri_id_2]
+                nome_cri_2 = cri_data_2.get("criterion", 'Critério Sem Nome')
                 
                 with col2:
                     st.subheader(nome_cri_2)
-                    valor_atual_2 = st.session_state.pesos_criterios.get(cri_id_2, None)
-                    if valor_atual_2 not in opcoes_pesos:
+                    valor_atual_2 = st.session_state.criteria_weights.get(cri_id_2, None)
+                    if valor_atual_2 not in weights_options:
                         valor_atual_2 = None
                         
-                    idx_atual_2 = opcoes_pesos.index(valor_atual_2) if valor_atual_2 is not None else None
+                    idx_atual_2 = weights_options.index(valor_atual_2) if valor_atual_2 is not None else None
                     
                     novo_peso_2 = st.selectbox(
                         label=f"Peso para o critério: {nome_cri_2}",
-                        options=opcoes_pesos,
+                        options=weights_options,
                         index=idx_atual_2,
                         placeholder="Selecione um nível de importância...",
                         key=f"peso_{cri_id_2}",
                         label_visibility="collapsed"
                     )
-                    novos_pesos[cri_id_2] = novo_peso_2
+                    new_weights[cri_id_2] = novo_peso_2
             
             st.markdown("---")
 
@@ -89,7 +89,7 @@ def render_pesos_criterios():
             submitted = st.form_submit_button("💾 Salvar Pesos", type="primary", use_container_width=True)
             
         if submitted:
-            for cid, val in novos_pesos.items():
+            for cid, val in new_weights.items():
                 if val is not None:
-                    st.session_state.pesos_criterios[cid] = val
+                    st.session_state.criteria_weights[cid] = val
             st.rerun()

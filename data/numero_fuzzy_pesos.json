@@ -1,7 +1,0 @@
-{
-    "MBI": {"descricao": "Muito Baixa Importância", "lmu": [0.1, 0.1, 0.2]},
-    "BI": {"descricao": "Baixa Importância", "lmu": [0.1, 0.2, 0.3]},
-    "IM": {"descricao": "Importância Média", "lmu": [0.2, 0.3, 0.4]},
-    "AI": {"descricao": "Alta Importância", "lmu": [0.3, 0.4, 0.5]},
-    "MAI": {"descricao": "Muito Alta Importância", "lmu": [0.4, 0.5, 0.6]}
-}

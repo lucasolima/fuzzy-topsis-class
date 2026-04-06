@@ -24,17 +24,17 @@ def main():
         secao = st.selectbox("Selecione a Seção:", ["Parametrização do Modelo", "Avaliação das Alternativas", "Classificação Final"])
         
         if secao == "Parametrização do Modelo":
-            menu_selecionado = st.radio(
+            selected_menu = st.radio(
                 "Opções de Parametrização:",
                 ["Alternativas e Classes", "Números Fuzzy", "Critérios"]
             )
         elif secao == "Avaliação das Alternativas":
-            menu_selecionado = st.radio(
+            selected_menu = st.radio(
                 "Opções de Avaliação:",
                 ["Alternativas", "Pesos"]
             )
         else:
-            menu_selecionado = st.radio(
+            selected_menu = st.radio(
                 "Opções de Classificação:",
                 ["Matriz de Decisão", "Classificação Final"]
             )
@@ -43,7 +43,7 @@ def main():
         
         st.header("Ferramentas")
         if st.button("Preencher Dados Amostrais"):
-            avaliacoes_iniciais = {
+            initial_evaluations = {
                 "ALT1": ["A", "MB", "A", "MB", "M", "B"],
                 "ALT2": ["M", "B", "B", "B", "M", "A"],
                 "ALT3": ["M", "MB", "A", "MB", "B", "B"],
@@ -54,36 +54,36 @@ def main():
                 "ALT8": ["A", "MB", "MA", "A", "A", "M"],
                 "ALT9": ["M", "MA", "M", "A", "A", "A"]
             }
-            pesos_iniciais = ["AI", "MAI", "IM", "BI", "BI", "MAI"]
+            initial_weights = ["AI", "MAI", "IM", "BI", "BI", "MAI"]
             
-            criterios = st.session_state.get("criterios", {})
-            cri_keys = list(criterios.keys())
+            criteria = st.session_state.get("criteria", {})
+            cri_keys = list(criteria.keys())
             
-            # Preencher avaliacoes
-            if "avaliacoes" not in st.session_state:
-                st.session_state.avaliacoes = {}
+            # Preencher evaluations
+            if "evaluations" not in st.session_state:
+                st.session_state.evaluations = {}
                 
-            for alt_id, valores in avaliacoes_iniciais.items():
-                if alt_id not in st.session_state.avaliacoes:
-                    st.session_state.avaliacoes[alt_id] = {}
-                for i, val in enumerate(valores):
+            for alt_id, values in initial_evaluations.items():
+                if alt_id not in st.session_state.evaluations:
+                    st.session_state.evaluations[alt_id] = {}
+                for i, val in enumerate(values):
                     if i < len(cri_keys):
-                        cri_id = cri_keys[i]
-                        for d in criterios[cri_id].get("descricoes", []):
-                            if d.get("termo_alternativa") == val:
-                                st.session_state.avaliacoes[alt_id][cri_id] = d["descricao"]
+                        crit_id = cri_keys[i]
+                        for d in criteria[crit_id].get("descriptions", []):
+                            if d.get("alternative_term") == val:
+                                st.session_state.evaluations[alt_id][crit_id] = d["description"]
                                 break
                                 
             # Preencher pesos
-            if "pesos_criterios" not in st.session_state:
-                st.session_state.pesos_criterios = {}
+            if "criteria_weights" not in st.session_state:
+                st.session_state.criteria_weights = {}
                 
-            pesos_fuzzy = st.session_state.get("numero_fuzzy_pesos", {})
-            for i, p in enumerate(pesos_iniciais):
+            fuzzy_weights = st.session_state.get("fuzzy_number_weights", {})
+            for i, p in enumerate(initial_weights):
                 if i < len(cri_keys):
-                    cri_id = cri_keys[i]
-                    if p in pesos_fuzzy:
-                        st.session_state.pesos_criterios[cri_id] = pesos_fuzzy[p]["descricao"]
+                    crit_id = cri_keys[i]
+                    if p in fuzzy_weights:
+                        st.session_state.criteria_weights[crit_id] = fuzzy_weights[p]["description"]
                         
             st.success("Dados preenchidos com sucesso!")
             st.rerun()
@@ -92,31 +92,31 @@ def main():
     system_data.update_from_state(st.session_state)
 
     # 3. Renderização Condicional da Navegação
-    if menu_selecionado == "Alternativas e Classes":
+    if selected_menu == "Alternativas e Classes":
         render_home()
         
-    elif menu_selecionado == "Números Fuzzy":
+    elif selected_menu == "Números Fuzzy":
         render_fuzzy_alternatives()
         
-    elif menu_selecionado == "Critérios":
-        from src.ui.criterios_config import render_criterios
-        render_criterios()
+    elif selected_menu == "Critérios":
+        from src.ui.criteria_config import render_criteria
+        render_criteria()
         
-    elif menu_selecionado == "Alternativas":
-        from src.ui.avaliacoes import render_avaliacoes
-        render_avaliacoes()
+    elif selected_menu == "Alternativas":
+        from src.ui.evaluations import render_evaluations
+        render_evaluations()
         
-    elif menu_selecionado == "Pesos":
-        from src.ui.pesos_criterios import render_pesos_criterios
-        render_pesos_criterios()
+    elif selected_menu == "Pesos":
+        from src.ui.criteria_weights import render_criteria_weights
+        render_criteria_weights()
         
-    elif menu_selecionado == "Matriz de Decisão":
-        from src.ui.matriz_decisao import render_matriz_decisao
-        render_matriz_decisao()
+    elif selected_menu == "Matriz de Decisão":
+        from src.ui.decision_matrix import render_decision_matrix
+        render_decision_matrix()
         
-    elif menu_selecionado == "Classificação Final":
-        from src.ui.matriz_ponderada import render_matriz_ponderada
-        render_matriz_ponderada()
+    elif selected_menu == "Classificação Final":
+        from src.ui.weighted_matrix import render_weighted_matrix
+        render_weighted_matrix()
 
 if __name__ == "__main__":
     main()

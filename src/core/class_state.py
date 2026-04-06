@@ -5,8 +5,8 @@ def add_class():
     class_id = f"CLA{st.session_state.next_class_id}"
 
     st.session_state.classes[class_id] = {
-        "descricao": "",
-        "termo_alternativa": None
+        "description": "",
+        "alternative_term": None
     }
     st.session_state.next_class_id += 1
 

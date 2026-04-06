@@ -1,5 +1,5 @@
 {
-    "CLA1": {"descricao": "Alta Prioridade", "termo_alternativa": ""},
-    "CLA2": {"descricao": "Média Prioridade", "termo_alternativa": ""},
-    "CLA3": {"descricao": "Baixa Prioridade", "termo_alternativa": ""}
+    "CLA1": {"description": "Alta Prioridade", "alternative_term": ""},
+    "CLA2": {"description": "Média Prioridade", "alternative_term": ""},
+    "CLA3": {"description": "Baixa Prioridade", "alternative_term": ""}
 }

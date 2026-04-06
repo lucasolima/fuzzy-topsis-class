@@ -11,7 +11,7 @@ def render_classes():
     
     st.markdown(
         "Nesta etapa, iremos cadastrar as classes ou perfis de prioridade que serão utilizados "
-        "para classificar as alternatives." 
+        "para classificar as alternativas." 
     )
 
     class_keys = list(st.session_state.classes.keys())

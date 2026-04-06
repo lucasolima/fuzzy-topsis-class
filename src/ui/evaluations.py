@@ -23,37 +23,37 @@ def render_evaluations():
         st.session_state.evaluations = {}
     
     with st.form("form_evaluations"):
-        novas_evaluations = {}
+        new_evaluations = {}
         
-        for alt_id, alt_nome in alternatives.items():
+        for alt_id, alt_name in alternatives.items():
             if alt_id not in st.session_state.evaluations:
                 st.session_state.evaluations[alt_id] = {}
                 
-            nome_da_alternativa = alt_nome if alt_nome.strip() else f"Alternativa Sem Nome"
-            with st.expander(f"**{nome_da_alternativa}**", expanded=False):
+            alternative_name = alt_name if alt_name.strip() else f"Alternativa Sem Nome"
+            with st.expander(f"**{alternative_name}**", expanded=False):
                 for crit_id, crit_data in criteria.items():
                     crit_name = crit_data.get("criterion", '')
-                    titulo_campo = crit_name if crit_name else "Critério Sem Nome"
+                    title_field = crit_name if crit_name else "Critério Sem Nome"
                     
                     # Lista de descrições possíveis do critério
-                    opcoes = [d["description"] for d in crit_data.get("descriptions", [])]
+                    options = [d["description"] for d in crit_data.get("descriptions", [])]
                     
-                    valor_atual = st.session_state.evaluations[alt_id].get(crit_id, None)
+                    current_value = st.session_state.evaluations[alt_id].get(crit_id, None)
                     # Verifica segurança caso as opções tenham sido apagadas na aba anterior
-                    if valor_atual not in opcoes:
-                        valor_atual = None
+                    if current_value not in options:
+                        current_value = None
                         
-                    idx_atual = opcoes.index(valor_atual) if valor_atual is not None else None
+                    current_idx = options.index(current_value) if current_value is not None else None
                     
-                    novo_valor = st.selectbox(
-                        label=titulo_campo,
-                        options=opcoes,
-                        index=idx_atual,
+                    new_value = st.selectbox(
+                        label=title_field,
+                        options=options,
+                        index=current_idx,
                         placeholder="Selecione uma opção...",
                         key=f"aval_{alt_id}_{crit_id}"
                     )
                     
-                    novas_evaluations[(alt_id, crit_id)] = novo_valor
+                    new_evaluations[(alt_id, crit_id)] = new_value
 
         st.markdown("---")
         cols = st.columns([1, 4])
@@ -61,7 +61,7 @@ def render_evaluations():
             submitted = st.form_submit_button("💾 Salvar Avaliações", type="primary", use_container_width=True)
             
         if submitted:
-            for (aid, cid), val in novas_evaluations.items():
+            for (aid, cid), val in new_evaluations.items():
                 if val is not None:
                     st.session_state.evaluations[aid][cid] = val
             st.rerun()

@@ -24,12 +24,12 @@ def render_decision_matrix():
         matrix_data = []
 
         # Iterar sobre todas as alternatives preenchidas
-        for alt_id, alt_nome in alternatives.items():
+        for alt_id, alt_name in alternatives.items():
             # Captura as respostas daquela alternativa, se houver
             answers_alt = evaluations.get(alt_id, {})
             
             # Vamos inicializar a linha do DataFrame com o ID e/ou nome da alternativa
-            row = {"Alternativa": f"{alt_nome}"}
+            row = {"Alternativa": f"{alt_name}"}
             
             for crit_id, crit_data in criteria.items():
                 crit_name = crit_data.get("criterion", crit_id)
@@ -84,9 +84,9 @@ def render_decision_matrix():
         weight_term = None
         if selected_desc:
             # Encontrar no dicionario de pesos fuzzy qual é a chave (termo) dessa descrição
-            for termo_key, w_data in fuzzy_weights.items():
+            for term_key, w_data in fuzzy_weights.items():
                 if w_data["description"] == selected_desc:
-                    weight_term = termo_key
+                    weight_term = term_key
                     break
                     
         if not weight_term:
@@ -94,10 +94,10 @@ def render_decision_matrix():
             
         row_pesos[crit_name] = weight_term
 
-    df_pesos = pd.DataFrame([row_pesos])
+    df_weights = pd.DataFrame([row_pesos])
     
     st.dataframe(
-        df_pesos,
+        df_weights,
         use_container_width=True,
         hide_index=True
     )

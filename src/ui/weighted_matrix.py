@@ -31,7 +31,7 @@ def render_weighted_matrix():
         return
 
     # Injeta a dependência no serviço
-    servico_ftopsis = FTopsisService(
+    ftopsis_service = FTopsisService(
         criteria=criteria,
         alternatives=alternatives,
         evaluations=evaluations,
@@ -42,41 +42,41 @@ def render_weighted_matrix():
     )
 
     # Passo 1: Matrizes Brutas Fuzzy
-    raw_matrix = servico_ftopsis.build_decision_matrix()
-    raw_matrix_classes = servico_ftopsis.build_classes_matrix()
+    raw_matrix = ftopsis_service.build_decision_matrix()
+    raw_matrix_classes = ftopsis_service.build_classes_matrix()
     
     # Valores ideais globais
-    ideal_values = servico_ftopsis.get_global_ideal_values(raw_matrix, raw_matrix_classes)
+    ideal_values = ftopsis_service.get_global_ideal_values(raw_matrix, raw_matrix_classes)
     
     # Passo 2: Normalizar Matrizes (Alternativas e Classes)
-    normalized_matrix, _ = servico_ftopsis.normalize_matrix(raw_matrix, ideal_values)
-    normalized_matrix_classes, _ = servico_ftopsis.normalize_matrix(raw_matrix_classes, ideal_values)
+    normalized_matrix, _ = ftopsis_service.normalize_matrix(raw_matrix, ideal_values)
+    normalized_matrix_classes, _ = ftopsis_service.normalize_matrix(raw_matrix_classes, ideal_values)
     
     # Passo 3: Ponderar a Matriz Normalizada
-    weighted_matrix = servico_ftopsis.weight_matrix(normalized_matrix)
-    weighted_matrix_classes = servico_ftopsis.weight_matrix(normalized_matrix_classes)
+    weighted_matrix = ftopsis_service.weight_matrix(normalized_matrix)
+    weighted_matrix_classes = ftopsis_service.weight_matrix(normalized_matrix_classes)
 
-    agrupamentos = servico_ftopsis.calculate_ideal_solution_from_classes(weighted_matrix_classes)
-    distancias_ideais = servico_ftopsis.calculate_distances_ideais(weighted_matrix, agrupamentos)
+    agrupamentos = ftopsis_service.calculate_ideal_solution_from_classes(weighted_matrix_classes)
+    ideals_distances = ftopsis_service.calculate_distances_ideais(weighted_matrix, agrupamentos)
     
-    if distancias_ideais:
-        cci_ideais = servico_ftopsis.calculate_cci_ideais(distancias_ideais)
+    if ideals_distances:
+        ideals_cci = ftopsis_service.calculate_cci_ideais(ideals_distances)
         cci_rows = []
-        for alt_id, info_cci in cci_ideais.items():
+        for alt_id, info_cci in ideals_cci.items():
             alt_nome = alternatives.get(alt_id, alt_id)
             row = {"Alternativa": alt_nome}
             
             # Identificar a classe com maior CCi
-            melhor_classe = None
-            maior_cci = -1.0
+            best_class = None
+            greater_cci = -1.0
             
             for label_combinacao, cci_val in info_cci.items():
                 row[label_combinacao] = cci_val
-                if cci_val > maior_cci:
-                    maior_cci = cci_val
-                    melhor_classe = label_combinacao
+                if cci_val > greater_cci:
+                    greater_cci = cci_val
+                    best_class = label_combinacao
                     
-            row["⭐ Classe Recomendada"] = melhor_classe
+            row["⭐ Classe Recomendada"] = best_class
             cci_rows.append(row)
             
         df_cci = pd.DataFrame(cci_rows)
@@ -103,11 +103,11 @@ def render_weighted_matrix():
 
         ranking_data = []
         for index, row in df_cci.iterrows():
-            maior_cci = max([row[col] for col in numeric_cols])
+            greater_cci = max([row[col] for col in numeric_cols])
             classe_rec = row["⭐ Classe Recomendada"]
             ranking_data.append({
                 "Alternativa": row["Alternativa"],
-                "Pontuação": maior_cci,
+                "Pontuação": greater_cci,
                 "Classe": classe_rec,
                 "ordem_classe": classes_order.get(classe_rec, 99)
             })

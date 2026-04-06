@@ -24,32 +24,32 @@ def render_criteria():
         st.info("Nenhum critério cadastrado. Clique no botão abaixo para adicionar.")
     else:
         for crit_id, crit_data in criteria.items():
-            nome_to_show = crit_data["criterion"] if crit_data["criterion"].strip() else "Novo Critério"
+            name_to_show = crit_data["criterion"] if crit_data["criterion"].strip() else "Novo Critério"
             
-            with st.expander(nome_to_show, expanded=False):
+            with st.expander(name_to_show, expanded=False):
                 # Campos principais do critério
-                col_nome, col_tipo, col_del = st.columns([6, 3, 1])
+                col_nome, col_type, col_del = st.columns([6, 3, 1])
                 
                 with col_nome:
-                    new_nome = st.text_input(
+                    new_name = st.text_input(
                         "Nome do Critério", 
                         value=crit_data["criterion"], 
                         key=f"nome_{crit_id}"
                     )
-                    if new_nome != crit_data["criterion"]:
-                        update_criterion_field(crit_id, "criterion", new_nome)
+                    if new_name != crit_data["criterion"]:
+                        update_criterion_field(crit_id, "criterion", new_name)
                         
-                with col_tipo:
-                    tipos = ["benefício", "custo"]
-                    idx_tipo = tipos.index(crit_data["type"]) if crit_data["type"] in tipos else 0
-                    new_tipo = st.selectbox(
+                with col_type:
+                    types = ["benefício", "custo"]
+                    idx_tipo = types.index(crit_data["type"]) if crit_data["type"] in types else 0
+                    new_type = st.selectbox(
                         "Tipo", 
-                        options=tipos, 
+                        options=types, 
                         index=idx_tipo, 
                         key=f"tipo_{crit_id}"
                     )
-                    if new_tipo != crit_data["type"]:
-                        update_criterion_field(crit_id, "type", new_tipo)
+                    if new_type != crit_data["type"]:
+                        update_criterion_field(crit_id, "type", new_type)
                         
                 with col_del:
                     st.write("") 

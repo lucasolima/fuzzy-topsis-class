@@ -2,10 +2,10 @@ import streamlit as st
 from src.core.state import add_alternative, update_alternative, delete_alternative
 
 def render_home():
-    st.header("Configuração Inicial Parâmetros: Alternativas")
+    st.header("Parametrização das Alternativas")
     
     st.markdown(
-        "Nesta primeira etapa, iremos cadastrar quais são as alternativas que iremos "
+        "Informe ao sistema quais são as alternativas que iremos "
         "classificar com o algoritmo Fuzzy TOPSIS."
     )
 

@@ -101,7 +101,7 @@ def render_fuzzy_config_table(dict_name: str, next_id_key: str, prefix: str, tit
             st.rerun()
 
 def render_fuzzy_alternatives():
-    st.header("Configuração: Números Fuzzy (Termos Linguísticos)")
+    st.header("Parametrização dos Números Fuzzy e Termos Linguísticos")
     
     st.markdown(
         "Nesta aba, configuramos os termos linguísticos e seus respectivos "

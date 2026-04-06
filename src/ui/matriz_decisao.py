@@ -62,7 +62,7 @@ def render_matriz_decisao():
         )
 
     st.markdown("---")
-    st.header("Pesos dos Critérios")
+    st.header("Matriz dos Critérios")
     st.markdown(
         "Esta tabela apresenta os **Termos Linguísticos (Pesos)** atrelados aos "
         "níveis de importância que foram selecionados na aba de Pesos."

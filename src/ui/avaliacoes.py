@@ -1,7 +1,7 @@
 import streamlit as st
 
 def render_avaliacoes():
-    st.header("Avaliações das Alternativas")
+    st.header("Avaliação das Alternativas")
     st.markdown(
         "Para cada alternativa abaixo, selecione a descrição correspondente em relação a "
         "cada um dos critérios estabelecidos."

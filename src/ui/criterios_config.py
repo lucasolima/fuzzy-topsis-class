@@ -6,7 +6,7 @@ from src.core.criterios_state import (
 )
 
 def render_criterios():
-    st.header("Configuração: Critérios")
+    st.header("Parametrização dos Critérios")
     st.markdown("Cadastre os critérios (Benefício ou Custo), as descrições de valoração e os termos linguísticos mínimos aceitos por classe em relação a este critério.")
     
     # Sincroniza caso classes tenham sido adicionadas/removidas ou renomeadas na primeira aba

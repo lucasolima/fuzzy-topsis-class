@@ -7,10 +7,11 @@ from src.core.class_state import (
 
 def render_classes():
     st.markdown("---")
-    st.subheader("Classes / Perfil de Prioridade (TOPSIS Class)")
+    st.header("Parametrização das Classes / Perfis de Prioridade")
     
     st.markdown(
-        "As alternativas finalizadas serão classificadas obedecendo às categorias definidas abaixo."
+        "Nesta etapa, iremos cadastrar as classes ou perfis de prioridade que serão utilizados "
+        "para classificar as alternativas." 
     )
 
     class_keys = list(st.session_state.classes.keys())
@@ -21,7 +22,7 @@ def render_classes():
     else:
         # Colunas sem o termo avaliado
         col_desc, col_del = st.columns([9, 1])
-        with col_desc: st.write("**Descrição da Classe**")
+        with col_desc: st.subheader("Lista de Classes")
         
         for cid in class_keys:
             data = st.session_state.classes[cid]

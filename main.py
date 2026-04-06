@@ -12,31 +12,31 @@ st.set_page_config(
 )
 
 def main():
-    st.title("Sistema Baseado em Fuzzy TOPSIS Class")
+    st.title("Sistema para Tomada de Decisão Multicritério - FTOPSIS Class")
 
     # 2. Inicializa gerência de estado (regras e dados visuais)
     initialize_state()
 
     # Menu Lateral
     with st.sidebar:
-        st.header("Configuração")
+        st.header("Menu Principal")
         
-        secao = st.selectbox("Selecione a Seção:", ["Configuração", "Avaliação", "Classificação"])
+        secao = st.selectbox("Selecione a Seção:", ["Parametrização do Modelo", "Avaliação das Alternativas", "Classificação Final"])
         
-        if secao == "Configuração":
+        if secao == "Parametrização do Modelo":
             menu_selecionado = st.radio(
-                "Opções de Configuração:",
+                "Opções de Parametrização:",
                 ["Alternativas e Classes", "Números Fuzzy", "Critérios"]
             )
-        elif secao == "Avaliação":
+        elif secao == "Avaliação das Alternativas":
             menu_selecionado = st.radio(
                 "Opções de Avaliação:",
-                ["Avaliações", "Pesos"]
+                ["Alternativas", "Pesos"]
             )
         else:
             menu_selecionado = st.radio(
                 "Opções de Classificação:",
-                ["Matriz de Decisão", "Resultado"]
+                ["Matriz de Decisão", "Classificação Final"]
             )
         
         st.markdown("---")
@@ -102,7 +102,7 @@ def main():
         from src.ui.criterios_config import render_criterios
         render_criterios()
         
-    elif menu_selecionado == "Avaliações":
+    elif menu_selecionado == "Alternativas":
         from src.ui.avaliacoes import render_avaliacoes
         render_avaliacoes()
         
@@ -114,7 +114,7 @@ def main():
         from src.ui.matriz_decisao import render_matriz_decisao
         render_matriz_decisao()
         
-    elif menu_selecionado == "Resultado":
+    elif menu_selecionado == "Classificação Final":
         from src.ui.matriz_ponderada import render_matriz_ponderada
         render_matriz_ponderada()
 

@@ -1,7 +1,7 @@
 import streamlit as st
 
 def render_pesos_criterios():
-    st.header("Pesos dos Critérios")
+    st.header("Peso dos Critérios")
     st.markdown(
         "Nesta etapa, defina a importância de cada um dos critérios. "
         "A lista abaixo contém todos os critérios que você cadastrou."

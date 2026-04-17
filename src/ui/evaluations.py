@@ -1,19 +1,5 @@
 import streamlit as st
 
-
-def _build_editor_rows(alternatives: dict, criteria: dict) -> list[dict]:
-    rows = []
-    for alt_id, alt_name in alternatives.items():
-        row = {
-            "Alternativa": alt_name.strip() if alt_name.strip() else "Alternativa sem nome",
-        }
-        for crit_id, crit_data in criteria.items():
-            crit_name = crit_data.get("criterion", "") or "Critério Sem Nome"
-            current_value = st.session_state.evaluations.get(alt_id, {}).get(crit_id)
-            row[crit_name] = current_value if current_value is not None else "Selecione..."
-        rows.append(row)
-    return rows
-
 def render_evaluations():
     st.header("Avaliação das Alternativas")
     st.markdown(
@@ -43,40 +29,52 @@ def render_evaluations():
         st.warning("Nenhum critério possui descrições cadastradas para avaliação.")
         return
 
-    editor_rows = _build_editor_rows(alternatives, criteria)
-    column_config = {
-        "Alternativa": st.column_config.TextColumn("Alternativa", disabled=True),
-    }
+    header_cols = st.columns([3] + [2 for _ in crit_items])
+    with header_cols[0]:
+        st.markdown("**Alternativa**")
+    for col, (_, crit_data) in zip(header_cols[1:], crit_items):
+        label = crit_data.get("criterion", "") or "Critério Sem Nome"
+        with col:
+            st.markdown(f"**{label}**")
 
-    for _, crit_data in crit_items:
-        crit_name = crit_data.get("criterion", "") or "Critério Sem Nome"
-        options = [d["description"] for d in crit_data.get("descriptions", []) if d.get("description")]
-        column_config[crit_name] = st.column_config.SelectboxColumn(
-            crit_name,
-            options=["Selecione..."] + options,
-            required=False,
-        )
+    placeholder = "Selecione..."
 
-    edited_rows = st.data_editor(
-        editor_rows,
-        hide_index=True,
-        use_container_width=True,
-        height=520,
-        column_config=column_config,
-        key="evaluations_matrix_editor",
-    )
-
-    if st.button("💾 Salvar Avaliações", use_container_width=True):
-        for (alt_id, _), row in zip(alt_items, edited_rows):
+    with st.container(height=520, border=True):
+        for alt_id, alt_name in alt_items:
             if alt_id not in st.session_state.evaluations:
                 st.session_state.evaluations[alt_id] = {}
 
-            for crit_id, crit_data in crit_items:
-                crit_name = crit_data.get("criterion", "") or "Critério Sem Nome"
-                value = row.get(crit_name)
-                if value in (None, "", "Selecione..."):
-                    st.session_state.evaluations[alt_id].pop(crit_id, None)
-                else:
-                    st.session_state.evaluations[alt_id][crit_id] = value
+            alternative_name = alt_name.strip() if alt_name.strip() else "Alternativa sem nome"
+            row_cols = st.columns([3] + [2 for _ in crit_items])
+            with row_cols[0]:
+                st.write(alternative_name)
 
-        st.rerun()
+            for idx, (crit_id, crit_data) in enumerate(crit_items, start=1):
+                crit_name = crit_data.get("criterion", "") or "Critério Sem Nome"
+                options = [d["description"] for d in crit_data.get("descriptions", []) if d.get("description")]
+
+                current_value = st.session_state.evaluations[alt_id].get(crit_id)
+                if current_value not in options:
+                    current_value = placeholder
+
+                with row_cols[idx]:
+                    if options:
+                        select_options = [placeholder] + options
+                        current_idx = select_options.index(current_value)
+                        new_value = st.selectbox(
+                            label=f"{alternative_name} - {crit_name}",
+                            options=select_options,
+                            index=current_idx,
+                            key=f"aval_{alt_id}_{crit_id}",
+                            label_visibility="collapsed"
+                        )
+                        st.session_state.evaluations[alt_id][crit_id] = None if new_value == placeholder else new_value
+                    else:
+                        st.caption("Sem descrições")
+                        st.session_state.evaluations[alt_id].pop(crit_id, None)
+
+    col_btn, _ = st.columns([1, 4])
+    with col_btn:
+        if st.button("💾 Salvar Avaliações", use_container_width=True):
+            st.success("Avaliações salvas com sucesso!")
+            st.rerun()

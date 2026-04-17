@@ -1,10 +1,16 @@
 import streamlit as st
+import copy
+import json
+
+
+def _evaluation_signature(values: dict) -> str:
+    return json.dumps(values, sort_keys=True, ensure_ascii=False)
 
 def render_evaluations():
     st.header("Avaliação das Alternativas")
     st.markdown(
         "Preencha a matriz abaixo selecionando, para cada alternativa, a descrição correspondente "
-        "em cada critério. O quadro possui rolagem interna e cabeçalho fixo."
+        "em cada critério. As alterações só são aplicadas ao clicar em **Salvar Avaliações**."
     )
     
     alternatives = st.session_state.get("alternatives", {})
@@ -21,6 +27,14 @@ def render_evaluations():
     # Garante a inicialização segura do bloco de avaliações no session_state
     if "evaluations" not in st.session_state:
         st.session_state.evaluations = {}
+    
+    current_signature = _evaluation_signature(st.session_state.evaluations)
+    if (
+        "evaluation_draft" not in st.session_state
+        or st.session_state.get("evaluation_draft_signature") != current_signature
+    ):
+        st.session_state.evaluation_draft = copy.deepcopy(st.session_state.evaluations)
+        st.session_state.evaluation_draft_signature = current_signature
 
     crit_items = list(criteria.items())
     alt_items = list(alternatives.items())
@@ -41,8 +55,8 @@ def render_evaluations():
 
     with st.container(height=520, border=True):
         for alt_id, alt_name in alt_items:
-            if alt_id not in st.session_state.evaluations:
-                st.session_state.evaluations[alt_id] = {}
+            if alt_id not in st.session_state.evaluation_draft:
+                st.session_state.evaluation_draft[alt_id] = {}
 
             alternative_name = alt_name.strip() if alt_name.strip() else "Alternativa sem nome"
             row_cols = st.columns([3] + [2 for _ in crit_items])
@@ -53,7 +67,7 @@ def render_evaluations():
                 crit_name = crit_data.get("criterion", "") or "Critério Sem Nome"
                 options = [d["description"] for d in crit_data.get("descriptions", []) if d.get("description")]
 
-                current_value = st.session_state.evaluations[alt_id].get(crit_id)
+                current_value = st.session_state.evaluation_draft[alt_id].get(crit_id)
                 if current_value not in options:
                     current_value = placeholder
 
@@ -68,13 +82,18 @@ def render_evaluations():
                             key=f"aval_{alt_id}_{crit_id}",
                             label_visibility="collapsed"
                         )
-                        st.session_state.evaluations[alt_id][crit_id] = None if new_value == placeholder else new_value
+                        if new_value == placeholder:
+                            st.session_state.evaluation_draft[alt_id].pop(crit_id, None)
+                        else:
+                            st.session_state.evaluation_draft[alt_id][crit_id] = new_value
                     else:
                         st.caption("Sem descrições")
-                        st.session_state.evaluations[alt_id].pop(crit_id, None)
+                        st.session_state.evaluation_draft[alt_id].pop(crit_id, None)
 
     col_btn, _ = st.columns([1, 4])
     with col_btn:
         if st.button("💾 Salvar Avaliações", use_container_width=True):
+            st.session_state.evaluations = copy.deepcopy(st.session_state.evaluation_draft)
+            st.session_state.evaluation_draft_signature = _evaluation_signature(st.session_state.evaluations)
             st.success("Avaliações salvas com sucesso!")
             st.rerun()

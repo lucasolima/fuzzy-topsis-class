@@ -6,19 +6,19 @@ from src.ui.fuzzy_alternatives import render_fuzzy_alternatives
 
 # 1. Configuração da página (deve ser o primeiro comando do app)
 st.set_page_config(
-    page_title="Fuzzy TOPSIS Class",
+    page_title="FTOPSIS Class",
     page_icon="📊",
     layout="wide"  # Alterado para 'wide' para acomodar melhor a tabela de fuzzy
 )
 
 def main():
-    st.title("Sistema para Tomada de Decisão Multicritério - FTOPSIS Class")
+    st.title("FTOPSIS Class - Customizações de SIGS")
 
     # 2. Inicializa gerência de estado (regras e dados visuais)
     initialize_state()
 
     # Menu Lateral
-    with st.sidebar:
+    with st.sidebar:    
         st.header("Menu Principal")
         
         secao = st.selectbox("Selecione a Seção:", ["Parametrização do Modelo", "Avaliação das Alternativas", "Classificação Final"])

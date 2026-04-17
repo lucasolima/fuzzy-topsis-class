@@ -139,27 +139,27 @@
         "type": "custo",
         "descriptions": [
             {
-                "description": "Baixíssima complexidade (Requisitos claramente definidos e precisos, mínima interdependência entre sistemas, poucas partes interessadas, muito baixo risco de mudanças)",
+                "description": "Baixíssima (Requisitos claramente definidos e precisos, mínima interdependência entre sistemas, poucas partes interessadas, muito baixo risco de mudanças)",
                 "alternative_term": "MB",
                 "weight_term": "MAI"
             },
             {
-                "description": "Baixa complexidade (Requisitos relativamente claros e precisos, interdependência limitada entre sistemas, algumas partes interessadas, baixo risco de mudanças)",
+                "description": "Baixa (Requisitos relativamente claros e precisos, interdependência limitada entre sistemas, algumas partes interessadas, baixo risco de mudanças)",
                 "alternative_term": "B",
                 "weight_term": "AI"
             },
             {
-                "description": "Média complexidade (Requisitos moderadamente complexos e claros, interdependência entre sistemas, algumas partes interessadas, risco moderado de mudanças)",
+                "description": "Média (Requisitos moderadamente complexos e claros, interdependência entre sistemas, algumas partes interessadas, risco moderado de mudanças)",
                 "alternative_term": "M",
                 "weight_term": "IM"
             },
             {
-                "description": "Alta complexidade (requisitos complexos e ambíguos, significativa interdependência entre sistemas, muitas partes interessadas, risco moderado a alto de mudanças)",
+                "description": "Alta (requisitos complexos e ambíguos, significativa interdependência entre sistemas, muitas partes interessadas, risco moderado a alto de mudanças)",
                 "alternative_term": "A",
                 "weight_term": "BI"
             },
             {
-                "description": "Altíssima complexidade (requisitos extremamente complexos e ambíguos, alta interdependência entre sistemas, muitas partes interessadas com necessidades conflitantes, alto risco de mudanças)",
+                "description": "Altíssima (requisitos extremamente complexos e ambíguos, alta interdependência entre sistemas, muitas partes interessadas com necessidades conflitantes, alto risco de mudanças)",
                 "alternative_term": "MA",
                 "weight_term": "MBI"
             }
@@ -184,27 +184,27 @@
         "type": "custo",
         "descriptions": [
             {
-                "description": "Baixíssimo esforço (tarefas simples que envolvem um único desenvolvedor por um curto período)",
+                "description": "Baixíssimo (tarefas simples que envolvem um único desenvolvedor por um curto período)",
                 "alternative_term": "MB",
                 "weight_term": "MAI"
             },
             {
-                "description": "Baixo esforço (customização pontual, envolvendo um desenvolvedor, tarefas claramente definidas e de baixa complexidade)",
+                "description": "Baixo (customização pontual, envolvendo um desenvolvedor, tarefas claramente definidas e de baixa complexidade)",
                 "alternative_term": "B",
                 "weight_term": "AI"
             },
             {
-                "description": "Médio esforço (customização que pode envolver um ou mais desenvolvedores, tarefas de complexidade média e algumas interdependências)",
+                "description": "Médio (customização que pode envolver um ou mais desenvolvedores, tarefas de complexidade média e algumas interdependências)",
                 "alternative_term": "M",
                 "weight_term": "IM"
             },
             {
-                "description": "Alto esforço (customização que envolve dois ou mais desenvolvedores, tarefas de complexidade média a alta, requerendo coordenação entre desenvolvedores e possivelmente algumas outras áreas)",
+                "description": "Alto (customização que envolve dois ou mais desenvolvedores, tarefas de complexidade média a alta, requerendo coordenação entre desenvolvedores e possivelmente algumas outras áreas)",
                 "alternative_term": "A",
                 "weight_term": "BI"
             },
             {
-                "description": "Altíssimo esforço (customização e integração de alta complexidade, envolvendo mais de um setor e dois ou mais desenvolvedores, com interdependências significativas e coordenação necessária entre equipes)",
+                "description": "Altíssimo (customização e integração de alta complexidade, envolvendo mais de um setor e dois ou mais desenvolvedores, com interdependências significativas e coordenação necessária entre equipes)",
                 "alternative_term": "MA",
                 "weight_term": "MBI"
             }

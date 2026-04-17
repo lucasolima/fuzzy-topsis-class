@@ -4,27 +4,27 @@
         "type": "benefício",
         "descriptions": [
             {
-                "description": "Prioridade explícita da alta gestão",
+                "description": "Muito Alto (Prioridade explícita da alta gestão)",
                 "alternative_term": "MA",
                 "weight_term": "MAI"
             },
             {
-                "description": "Alinhado a estratégias governamentais (EGD)",
+                "description": "Alto (Alinhado a estratégias governamentais - EGD)",
                 "alternative_term": "A",
                 "weight_term": "AI"
             },
             {
-                "description": "Previsto em PDTIC anterior",
+                "description": "Médio (Previsto em PDTIC anterior)",
                 "alternative_term": "M",
                 "weight_term": "IM"
             },
             {
-                "description": "Previsto em planos estratégicos",
+                "description": "Baixo (Previsto em planos estratégicos)",
                 "alternative_term": "B",
                 "weight_term": "BI"
             },
             {
-                "description": "Não está previsto em nenhum plano",
+                "description": "Muito Baixo (Não está previsto em nenhum plano)",
                 "alternative_term": "MB",
                 "weight_term": "MBI"
             }
@@ -49,27 +49,27 @@
         "type": "benefício",
         "descriptions": [
             {
-                "description": "Mais de uma exigência legal/regulatória externa",
+                "description": "Muito Alto (Mais de uma exigência legal/regulatória externa)",
                 "alternative_term": "MA",
                 "weight_term": "MAI"
             },
             {
-                "description": "Mais de uma exigência legal / regulatória interna",
+                "description": "Alto (Mais de uma exigência legal / regulatória interna)",
                 "alternative_term": "A",
                 "weight_term": "AI"
             },
             {
-                "description": "Uma exigência legal / regulatória externa",
+                "description": "Médio (Uma exigência legal / regulatória externa)",
                 "alternative_term": "M",
                 "weight_term": "IM"
             },
             {
-                "description": "Uma exigência legal / regulatória interna",
+                "description": "Baixo (Uma exigência legal / regulatória interna)",
                 "alternative_term": "B",
                 "weight_term": "BI"
             },
             {
-                "description": "Não é uma exigência legal / regulatória",
+                "description": "Muito Baixo (Não é uma exigência legal / regulatória)",
                 "alternative_term": "MB",
                 "weight_term": "MBI"
             }
@@ -94,27 +94,27 @@
         "type": "benefício",
         "descriptions": [
             {
-                "description": "Universidade e a sociedade",
+                "description": "Muito Alto (Universidade e a sociedade)",
                 "alternative_term": "MA",
                 "weight_term": "MAI"
             },
             {
-                "description": "Maioria ou toda a Comunidade Acadêmica",
+                "description": "Alto (Maioria ou toda a Comunidade Acadêmica)",
                 "alternative_term": "A",
                 "weight_term": "AI"
             },
             {
-                "description": "Maioria dos técnicos-administrativos e/ou a maioria dos discentes e/ou docentes",
+                "description": "Médio (Maioria dos técnicos-administrativos e/ou a maioria dos discentes e/ou docentes)",
                 "alternative_term": "M",
                 "weight_term": "IM"
             },
             {
-                "description": "Centros, órgãos suplementares ou pró-reitorias isoladamente",
+                "description": "Baixo (Centros, órgãos suplementares ou pró-reitorias isoladamente)",
                 "alternative_term": "B",
                 "weight_term": "BI"
             },
             {
-                "description": "Afeta apenas um departamento ou setor",
+                "description": "Muito Baixo (Afeta apenas um departamento ou setor)",
                 "alternative_term": "MB",
                 "weight_term": "MBI"
             }
@@ -139,7 +139,7 @@
         "type": "custo",
         "descriptions": [
             {
-                "description": "Baixíssima (Requisitos claramente definidos e precisos, mínima interdependência entre sistemas, poucas partes interessadas, muito baixo risco de mudanças)",
+                "description": "Muito Baixa (Requisitos claramente definidos e precisos, mínima interdependência entre sistemas, poucas partes interessadas, muito baixo risco de mudanças)",
                 "alternative_term": "MB",
                 "weight_term": "MAI"
             },
@@ -159,7 +159,7 @@
                 "weight_term": "BI"
             },
             {
-                "description": "Altíssima (requisitos extremamente complexos e ambíguos, alta interdependência entre sistemas, muitas partes interessadas com necessidades conflitantes, alto risco de mudanças)",
+                "description": "Muito Alta (requisitos extremamente complexos e ambíguos, alta interdependência entre sistemas, muitas partes interessadas com necessidades conflitantes, alto risco de mudanças)",
                 "alternative_term": "MA",
                 "weight_term": "MBI"
             }
@@ -184,7 +184,7 @@
         "type": "custo",
         "descriptions": [
             {
-                "description": "Baixíssimo (tarefas simples que envolvem um único desenvolvedor por um curto período)",
+                "description": "Muito Baixo (tarefas simples que envolvem um único desenvolvedor por um curto período)",
                 "alternative_term": "MB",
                 "weight_term": "MAI"
             },
@@ -204,7 +204,7 @@
                 "weight_term": "BI"
             },
             {
-                "description": "Altíssimo (customização e integração de alta complexidade, envolvendo mais de um setor e dois ou mais desenvolvedores, com interdependências significativas e coordenação necessária entre equipes)",
+                "description": "Muito Alto (customização e integração de alta complexidade, envolvendo mais de um setor e dois ou mais desenvolvedores, com interdependências significativas e coordenação necessária entre equipes)",
                 "alternative_term": "MA",
                 "weight_term": "MBI"
             }
@@ -229,27 +229,27 @@
         "type": "custo",
         "descriptions": [
             {
-                "description": "Até 1 mês",
+                "description": "Muito Baixo (Até 1 mês)",
                 "alternative_term": "MB",
                 "weight_term": "MAI"
             },
             {
-                "description": "De 1 a 3 meses",
+                "description": "Baixo (De 1 a 3 meses)",
                 "alternative_term": "B",
                 "weight_term": "AI"
             },
             {
-                "description": "De 3 a 6 meses",
+                "description": "Médio (De 3 a 6 meses)",
                 "alternative_term": "M",
                 "weight_term": "IM"
             },
             {
-                "description": "De 6 meses a 1 ano",
+                "description": "Alto (De 6 meses a 1 ano)",
                 "alternative_term": "A",
                 "weight_term": "BI"
             },
             {
-                "description": "Mais de um ano",
+                "description": "Muito Alto (Mais de um ano)",
                 "alternative_term": "MA",
                 "weight_term": "MBI"
             }

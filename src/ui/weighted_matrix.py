@@ -140,8 +140,8 @@ def render_weighted_matrix():
         classes_order = {c["description"]: i for i, c in enumerate(classes.values())}
 
         ranking_data = []
-        for index, row in df_cci.iterrows():
-            greater_cci = max([row[col] for col in numeric_cols])
+        for row in cci_rows:
+            greater_cci = max((row[label] for label in label_order), default=0.0)
             classe_rec = row["⭐ Classe Recomendada"]
             ranking_data.append({
                 "Alternativa": row["Alternativa"],

@@ -1,6 +1,6 @@
 {
     "CRI1": {
-        "criterion": "Alinhamento estratégico PEI, PDI, PDTIC e EGD",
+        "criterion": "Alinhamento estratégico",
         "type": "benefício",
         "descriptions": [
             {
@@ -45,31 +45,31 @@
         }
     },
     "CRI2": {
-        "criterion": "Exigência legal / regulatória",
+        "criterion": "Exigência legal",
         "type": "benefício",
         "descriptions": [
             {
-                "description": "Muito Alto (Mais de uma exigência legal/regulatória externa)",
+                "description": "Muito Alta (Mais de uma exigência legal/regulatória externa)",
                 "alternative_term": "MA",
                 "weight_term": "MAI"
             },
             {
-                "description": "Alto (Mais de uma exigência legal / regulatória interna)",
+                "description": "Alta (Mais de uma exigência legal / regulatória interna)",
                 "alternative_term": "A",
                 "weight_term": "AI"
             },
             {
-                "description": "Médio (Uma exigência legal / regulatória externa)",
+                "description": "Média (Uma exigência legal / regulatória externa)",
                 "alternative_term": "M",
                 "weight_term": "IM"
             },
             {
-                "description": "Baixo (Uma exigência legal / regulatória interna)",
+                "description": "Baixa (Uma exigência legal / regulatória interna)",
                 "alternative_term": "B",
                 "weight_term": "BI"
             },
             {
-                "description": "Muito Baixo (Não é uma exigência legal / regulatória)",
+                "description": "Muito Baixa (Não é uma exigência legal / regulatória)",
                 "alternative_term": "MB",
                 "weight_term": "MBI"
             }
@@ -90,31 +90,31 @@
         }
     },
     "CRI3": {
-        "criterion": "Abrangência na comunidade universitária",
+        "criterion": "Abrangência",
         "type": "benefício",
         "descriptions": [
             {
-                "description": "Muito Alto (Universidade e a sociedade)",
+                "description": "Muito Alta (Universidade e a sociedade)",
                 "alternative_term": "MA",
                 "weight_term": "MAI"
             },
             {
-                "description": "Alto (Maioria ou toda a Comunidade Acadêmica)",
+                "description": "Alta (Maioria ou toda a Comunidade Acadêmica)",
                 "alternative_term": "A",
                 "weight_term": "AI"
             },
             {
-                "description": "Médio (Maioria dos técnicos-administrativos e/ou a maioria dos discentes e/ou docentes)",
+                "description": "Média (Maioria dos técnicos-administrativos e/ou a maioria dos discentes e/ou docentes)",
                 "alternative_term": "M",
                 "weight_term": "IM"
             },
             {
-                "description": "Baixo (Centros, órgãos suplementares ou pró-reitorias isoladamente)",
+                "description": "Baixa (Centros, órgãos suplementares ou pró-reitorias isoladamente)",
                 "alternative_term": "B",
                 "weight_term": "BI"
             },
             {
-                "description": "Muito Baixo (Afeta apenas um departamento ou setor)",
+                "description": "Muito Baixa (Afeta apenas um departamento ou setor)",
                 "alternative_term": "MB",
                 "weight_term": "MBI"
             }

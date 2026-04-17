@@ -3,8 +3,8 @@ import streamlit as st
 def render_evaluations():
     st.header("Avaliação das Alternativas")
     st.markdown(
-        "Para cada alternativa abaixo, selecione a descrição correspondente em relação a "
-        "cada um dos critérios estabelecidos."
+        "Preencha a matriz abaixo selecionando, para cada alternativa, a descrição correspondente "
+        "em cada critério."
     )
     
     alternatives = st.session_state.get("alternatives", {})
@@ -21,47 +21,68 @@ def render_evaluations():
     # Garante a inicialização segura do bloco de avaliações no session_state
     if "evaluations" not in st.session_state:
         st.session_state.evaluations = {}
-    
+
+    crit_items = list(criteria.items())
+    alt_items = list(alternatives.items())
+
     with st.form("form_evaluations"):
         new_evaluations = {}
-        
-        for alt_id, alt_name in alternatives.items():
+
+        header_cols = st.columns([3] + [2 for _ in crit_items]) if crit_items else []
+        if header_cols:
+            with header_cols[0]:
+                st.markdown("**Alternativa**")
+            for col, (_, crit_data) in zip(header_cols[1:], crit_items):
+                label = crit_data.get("criterion", "") or "Critério Sem Nome"
+                with col:
+                    st.markdown(f"**{label}**")
+
+        placeholder = "Selecione..."
+
+        for alt_id, alt_name in alt_items:
             if alt_id not in st.session_state.evaluations:
                 st.session_state.evaluations[alt_id] = {}
-                
-            alternative_name = alt_name if alt_name.strip() else f"Alternativa Sem Nome"
-            with st.expander(f"**{alternative_name}**", expanded=False):
-                for crit_id, crit_data in criteria.items():
-                    crit_name = crit_data.get("criterion", '')
-                    title_field = crit_name if crit_name else "Critério Sem Nome"
-                    
-                    # Lista de descrições possíveis do critério
-                    options = [d["description"] for d in crit_data.get("descriptions", [])]
-                    
-                    current_value = st.session_state.evaluations[alt_id].get(crit_id, None)
-                    # Verifica segurança caso as opções tenham sido apagadas na aba anterior
-                    if current_value not in options:
-                        current_value = None
-                        
-                    current_idx = options.index(current_value) if current_value is not None else None
-                    
-                    new_value = st.selectbox(
-                        label=title_field,
-                        options=options,
-                        index=current_idx,
-                        placeholder="Selecione uma opção...",
-                        key=f"aval_{alt_id}_{crit_id}"
-                    )
-                    
-                    new_evaluations[(alt_id, crit_id)] = new_value
 
-        st.markdown("---")
+            alternative_name = alt_name.strip() if alt_name.strip() else "Alternativa sem nome"
+            row_cols = st.columns([3] + [2 for _ in crit_items])
+            with row_cols[0]:
+                st.write(alternative_name)
+
+            for idx, (crit_id, crit_data) in enumerate(crit_items, start=1):
+                crit_name = crit_data.get("criterion", "") or "Critério Sem Nome"
+                options = [d["description"] for d in crit_data.get("descriptions", []) if d.get("description")]
+
+                current_value = st.session_state.evaluations[alt_id].get(crit_id)
+                if current_value not in options:
+                    current_value = placeholder
+
+                with row_cols[idx]:
+                    if options:
+                        select_options = [placeholder] + options
+                        current_idx = select_options.index(current_value)
+                        new_value = st.selectbox(
+                            label=f"{alternative_name} - {crit_name}",
+                            options=select_options,
+                            index=current_idx,
+                            key=f"aval_{alt_id}_{crit_id}",
+                            label_visibility="collapsed"
+                        )
+                        new_evaluations[(alt_id, crit_id)] = None if new_value == placeholder else new_value
+                    else:
+                        st.caption("Sem descrições")
+                        new_evaluations[(alt_id, crit_id)] = None
+
+        if alt_items:
+            st.markdown("---")
+
         cols = st.columns([1, 4])
         with cols[0]:
             submitted = st.form_submit_button("💾 Salvar Avaliações", use_container_width=True)
             
         if submitted:
             for (aid, cid), val in new_evaluations.items():
-                if val is not None:
+                if val is None:
+                    st.session_state.evaluations[aid].pop(cid, None)
+                else:
                     st.session_state.evaluations[aid][cid] = val
             st.rerun()

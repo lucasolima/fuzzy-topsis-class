@@ -1,5 +1,4 @@
 import streamlit as st
-import pandas as pd
 from src.core.data_repository import system_data
 
 def render_decision_matrix():
@@ -52,14 +51,7 @@ def render_decision_matrix():
                 
             matrix_data.append(row)
             
-        df_matrix = pd.DataFrame(matrix_data)
-        
-        # Exibir a tabela
-        st.dataframe(
-            df_matrix,
-            use_container_width=True,
-            hide_index=True
-        )
+        st.table(matrix_data)
 
     st.markdown("---")
     st.header("Matriz dos Critérios")
@@ -94,10 +86,4 @@ def render_decision_matrix():
             
         row_pesos[crit_name] = weight_term
 
-    df_weights = pd.DataFrame([row_pesos])
-    
-    st.dataframe(
-        df_weights,
-        use_container_width=True,
-        hide_index=True
-    )
+    st.table([row_pesos])

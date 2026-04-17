@@ -1,7 +1,42 @@
 import streamlit as st
-import pandas as pd
+import html
 from src.core.data_repository import system_data
 from src.services.ftopsis_service import FTopsisService
+
+
+def _render_html_table(headers, rows):
+    header_html = "".join(f"<th>{html.escape(str(header))}</th>" for header in headers)
+    body_html = ""
+    for row in rows:
+        cells = []
+        for cell in row:
+            value = cell.get("value", "")
+            style = cell.get("style", "")
+            cells.append(f'<td style="{style}">{html.escape(str(value))}</td>')
+        body_html += f"<tr>{''.join(cells)}</tr>"
+
+    table_html = f"""
+    <style>
+        .ftopsis-table {{
+            width: 100%;
+            border-collapse: collapse;
+        }}
+        .ftopsis-table th, .ftopsis-table td {{
+            border: 1px solid #ddd;
+            padding: 0.5rem;
+            text-align: left;
+        }}
+        .ftopsis-table th {{
+            background: #f5f5f5;
+            font-weight: 600;
+        }}
+    </style>
+    <table class="ftopsis-table">
+        <thead><tr>{header_html}</tr></thead>
+        <tbody>{body_html}</tbody>
+    </table>
+    """
+    st.markdown(table_html, unsafe_allow_html=True)
 
 def render_weighted_matrix():
     st.header("Resultado da Classificação")
@@ -62,36 +97,39 @@ def render_weighted_matrix():
     if ideals_distances:
         ideals_cci = ftopsis_service.calculate_cci_ideais(ideals_distances)
         cci_rows = []
+        label_order = list(next(iter(ideals_cci.values())).keys()) if ideals_cci else []
         for alt_id, info_cci in ideals_cci.items():
             alt_nome = alternatives.get(alt_id, alt_id)
             row = {"Alternativa": alt_nome}
-            
-            # Identificar a classe com maior CCi
+
             best_class = None
             greater_cci = -1.0
-            
-            for label_combinacao, cci_val in info_cci.items():
+
+            for label_combinacao in label_order:
+                cci_val = info_cci.get(label_combinacao, 0.0)
                 row[label_combinacao] = cci_val
                 if cci_val > greater_cci:
                     greater_cci = cci_val
                     best_class = label_combinacao
-                    
+
             row["⭐ Classe Recomendada"] = best_class
             cci_rows.append(row)
-            
-        df_cci = pd.DataFrame(cci_rows)
-        
-        # Estilizar o DataFrame: destacar o maior valor nas colunas numéricas de CCi
-        numeric_cols = [col for col in df_cci.columns if col not in ["Alternativa", "⭐ Classe Recomendada"]]
-        
-        def highlight_max(row):
-            is_max = row == row.max()
-            return ['background-color: #2e7b32; color: white; font-weight: bold;' if v else '' for v in is_max]
-            
-        styled_df = df_cci.style.apply(highlight_max, subset=numeric_cols, axis=1)
-        styled_df = styled_df.format({col: "{:.3f}" for col in numeric_cols})
-        
-        st.dataframe(styled_df, use_container_width=True, hide_index=True)
+
+        headers = ["Alternativa"] + label_order + ["⭐ Classe Recomendada"]
+        table_rows = []
+        for row in cci_rows:
+            max_cci = max((row[label] for label in label_order), default=0.0)
+            formatted_row = []
+            formatted_row.append({"value": row["Alternativa"]})
+            for label in label_order:
+                value = row[label]
+                is_max = value == max_cci
+                style = "background-color: #2e7b32; color: white; font-weight: bold;" if is_max else ""
+                formatted_row.append({"value": f"{value:.3f}", "style": style})
+            formatted_row.append({"value": row["⭐ Classe Recomendada"]})
+            table_rows.append(formatted_row)
+
+        _render_html_table(headers, table_rows)
 
         st.markdown("---")
         st.header("Ranking")
@@ -112,13 +150,13 @@ def render_weighted_matrix():
                 "ordem_classe": classes_order.get(classe_rec, 99)
             })
 
-        df_ranking = pd.DataFrame(ranking_data)
-        # Ordena primariamente pela classe recomendada e secundariamente pela pontuação
-        df_ranking.sort_values(by=["ordem_classe", "Pontuação"], ascending=[True, False], inplace=True)
-        df_ranking.drop(columns=["ordem_classe"], inplace=True)
+        ranking_data.sort(key=lambda item: (item["ordem_classe"], -item["Pontuação"]))
 
-        st.dataframe(
-            df_ranking.style.format({"Pontuação": "{:.3f}"}), 
-            use_container_width=True, 
-            hide_index=True
-        )
+        st.table([
+            {
+                "Alternativa": item["Alternativa"],
+                "Pontuação": f'{item["Pontuação"]:.3f}',
+                "Classe": item["Classe"]
+            }
+            for item in ranking_data
+        ])

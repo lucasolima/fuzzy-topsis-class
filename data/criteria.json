@@ -32,7 +32,7 @@
         "classes": {
             "CLA1": {
                 "description": "Alta Prioridade",
-                "alternative_term": "A"
+                "alternative_term": "MA"
             },
             "CLA2": {
                 "description": "Média Prioridade",
@@ -40,7 +40,7 @@
             },
             "CLA3": {
                 "description": "Baixa Prioridade",
-                "alternative_term": "B"
+                "alternative_term": "MB"
             }
         }
     },
@@ -122,7 +122,7 @@
         "classes": {
             "CLA1": {
                 "description": "Alta Prioridade",
-                "alternative_term": "A"
+                "alternative_term": "MA"
             },
             "CLA2": {
                 "description": "Média Prioridade",
@@ -167,7 +167,7 @@
         "classes": {
             "CLA1": {
                 "description": "Alta Prioridade",
-                "alternative_term": "B"
+                "alternative_term": "M"
             },
             "CLA2": {
                 "description": "Média Prioridade",
@@ -175,7 +175,7 @@
             },
             "CLA3": {
                 "description": "Baixa Prioridade",
-                "alternative_term": "MA"
+                "alternative_term": "A"
             }
         }
     },
@@ -212,7 +212,7 @@
         "classes": {
             "CLA1": {
                 "description": "Alta Prioridade",
-                "alternative_term": "B"
+                "alternative_term": "M"
             },
             "CLA2": {
                 "description": "Média Prioridade",

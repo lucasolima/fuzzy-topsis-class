@@ -44,17 +44,20 @@ def main():
         st.header("Ferramentas")
         if st.button("Preencher Dados Amostrais"):
             initial_evaluations = {
-                "ALT1": ["A", "MB", "A", "MB", "M", "B"],
-                "ALT2": ["M", "B", "B", "B", "M", "A"],
-                "ALT3": ["M", "MB", "A", "MB", "B", "B"],
-                "ALT4": ["M", "A", "M", "MB", "A", "M"],
-                "ALT5": ["M", "MB", "A", "MB", "B", "B"],
-                "ALT6": ["M", "B", "M", "MB", "B", "A"],
-                "ALT7": ["M", "A", "A", "B", "B", "B"],
-                "ALT8": ["A", "MB", "MA", "A", "A", "M"],
-                "ALT9": ["M", "MA", "M", "A", "A", "A"]
+                "ALT1":  ["M", "MB", "A", "M", "M", "MB"],
+                "ALT2":  ["A", "M", "MB", "B", "B", "MB"],
+                "ALT3":  ["A", "MB", "M", "M", "B", "M"],
+                "ALT4":  ["MA", "MA", "MA", "M", "M", "B"],
+                "ALT5":  ["MA", "B", "A", "M", "M", "MB"],
+                "ALT6":  ["A", "M", "M", "B", "M", "B"],
+                "ALT7":  ["M", "B", "M", "M", "A", "A"],
+                "ALT8":  ["A", "B", "B", "M", "M", "M"],
+                "ALT9":  ["MA", "MB", "MA", "M", "M", "M"],
+                "ALT10": ["M", "MB", "A", "M", "B", "MB"],
+                "ALT11": ["M", "M", "M", "B", "M", "M"],
+                "ALT12": ["M", "MB", "A", "A", "MA", "MA"]
             }
-            initial_weights = ["AI", "MAI", "IM", "BI", "BI", "MAI"]
+            initial_weights = ["AI", "IM", "MAI", "BI", "IM", "MAI"]
             
             criteria = st.session_state.get("criteria", {})
             cri_keys = list(criteria.keys())

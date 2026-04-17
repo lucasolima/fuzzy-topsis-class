@@ -1,11 +1,14 @@
 {
-    "ALT1": "SIPAC - Autenticação pelo gov.br",
-    "ALT2": "SIPAC - Migração dos módulos de Patrimônio e Inventário para o SIADS",
-    "ALT3": "SIPAC - Implantação do módulo de Bolsas",
-    "ALT4": "SIGRH - Aprimoramento PID/RID - Progressão docente",
-    "ALT5": "SIGAA - Implantação do Módulo de Pesquisa",
-    "ALT6": "SIGAA - Implantação do Módulo Assistência Estudantil",
-    "ALT7": "SIGAA - Central de Estágios",
-    "ALT8": "SIGAA - Processos Seletivos",
-    "ALT9": "SIGAA - Emissão, guarda e integração do serviço de diploma digital com a RNP"
+    "ALT1": "SIGAA - Implantação do Módulo de Pesquisa",
+    "ALT2": "SIGAA - Necessidades Educacionais Específicas - NEE",
+    "ALT3": "SIGAA - Adaptação do Módulo de Extensão",
+    "ALT4": "SIGAA - Implantar Diploma Digital para outras IES",
+    "ALT5": "SIGAA - Ajustes no fluxo de TCC",
+    "ALT6": "SIGRH - Implantação do Módulo Avaliação de Desempenho",
+    "ALT7": "SIGRH - Implantação do Módulo Frequência/Financeiro",
+    "ALT8": "SIGRH - Implantação do Módulo de Comissões",
+    "ALT9": "SIGRH - Customização do módulo de Concursos",
+    "ALT10": "SIPAC - Implantação do módulo de Bolsas",
+    "ALT11": "SIPAC - Módulo de Patrimônio - Inventário de Bens",
+    "ALT12": "SIPAC - Implantação do módulo Restaurante Universitário"
 }

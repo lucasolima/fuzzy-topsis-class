@@ -102,6 +102,29 @@ def sync_classes_in_criteria(criteria_draft: dict, classes: dict):
             else:
                 crit_data["classes"][cid]["description"] = cdata["description"]
 
+
+def _validate_criteria(criteria: dict) -> list[str]:
+    errors = []
+    for crit_id, crit_data in criteria.items():
+        if not str(crit_data.get("criterion", "")).strip():
+            errors.append(f"Critério {crit_id} está sem nome.")
+
+        for idx, desc in enumerate(crit_data.get("descriptions", []), start=1):
+            if not str(desc.get("description", "")).strip():
+                errors.append(f"Critério {crit_id}: descrição {idx} está vazia.")
+            if not desc.get("alternative_term"):
+                errors.append(f"Critério {crit_id}: descrição {idx} sem termo de alternativa.")
+            if not desc.get("weight_term"):
+                errors.append(f"Critério {crit_id}: descrição {idx} sem termo de peso.")
+
+        for class_id, class_data in crit_data.get("classes", {}).items():
+            if not class_data.get("alternative_term"):
+                errors.append(
+                    f"Critério {crit_id}: classe {class_id} sem termo mínimo de alternativa."
+                )
+
+    return errors
+
 def render_criteria():
     st.header("Parametrização dos Critérios")
     st.markdown("Cadastre os critérios (Benefício ou Custo), as descrições de valoração e os termos linguísticos mínimos aceitos por classe em relação a este critério.")
@@ -241,6 +264,12 @@ def render_criteria():
         st.rerun()
 
     if st.button("💾 Salvar Alterações", key="save_criteria"):
+        errors = _validate_criteria(criteria)
+        if errors:
+            st.error("Há campos em branco. Corrija antes de salvar.")
+            for msg in errors:
+                st.caption(msg)
+            return
         st.session_state.criteria = copy.deepcopy(criteria)
         st.session_state.next_cri_id = st.session_state.next_cri_id_draft
         st.session_state.criteria_draft_signature = _draft_signature(

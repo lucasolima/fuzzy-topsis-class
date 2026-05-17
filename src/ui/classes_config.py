@@ -24,6 +24,16 @@ def _init_classes_draft():
         st.session_state.classes_draft_signature = signature
 
 
+def _validate_classes(draft: dict) -> list[str]:
+    errors = []
+    if len(draft) != 3:
+        errors.append("É necessário cadastrar exatamente 3 classes.")
+    for class_id, data in draft.items():
+        if not str(data.get("description", "")).strip():
+            errors.append(f"Classe {class_id} está sem descrição.")
+    return errors
+
+
 def render_classes():
     st.markdown("---")
     st.header("Parametrização das Classes / Perfis de Prioridade")
@@ -67,7 +77,7 @@ def render_classes():
 
     st.markdown("---")
     
-    if st.button("➕ Adicionar", key="add_class_btn"):
+    if st.button("➕ Adicionar", key="add_class_btn", disabled=len(class_keys) >= 3):
         class_id = f"CLA{st.session_state.next_class_id_draft}"
         st.session_state.classes_draft[class_id] = {
             "description": "",
@@ -77,6 +87,12 @@ def render_classes():
         st.rerun()
 
     if st.button("💾 Salvar Alterações", key="save_classes"):
+        errors = _validate_classes(st.session_state.classes_draft)
+        if errors:
+            st.error("Há campos em branco. Corrija antes de salvar.")
+            for msg in errors:
+                st.caption(msg)
+            return
         st.session_state.classes = copy.deepcopy(st.session_state.classes_draft)
         st.session_state.next_class_id = st.session_state.next_class_id_draft
         st.session_state.classes_draft_signature = _draft_signature(

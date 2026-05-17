@@ -44,6 +44,14 @@ def _init_fuzzy_weight_draft():
         st.session_state.fuzzy_weight_draft_signature = signature
 
 
+def _validate_fuzzy_terms(draft: dict, label: str) -> list[str]:
+    errors = []
+    for term_key, data in draft.items():
+        if not str(data.get("description", "")).strip():
+            errors.append(f"{label}: termo {term_key} está sem descrição.")
+    return errors
+
+
 def add_fuzzy_term(fuzzy_terms: dict, next_id_key: str, prefix: str = "NOVO"):
     term_id = f"{prefix}_{st.session_state[next_id_key]}"
     fuzzy_terms[term_id] = {
@@ -212,6 +220,12 @@ def render_fuzzy_alternatives():
         )
         st.rerun()
     if st.button("💾 Salvar Alterações", key="save_fuzzy_alt"):
+        errors = _validate_fuzzy_terms(st.session_state.fuzzy_number_alternatives_draft, "Alternativas")
+        if errors:
+            st.error("Há campos em branco. Corrija antes de salvar.")
+            for msg in errors:
+                st.caption(msg)
+            return
         st.session_state.fuzzy_number_alternatives = copy.deepcopy(
             st.session_state.fuzzy_number_alternatives_draft
         )
@@ -244,6 +258,12 @@ def render_fuzzy_alternatives():
         )
         st.rerun()
     if st.button("💾 Salvar Alterações", key="save_fuzzy_weight"):
+        errors = _validate_fuzzy_terms(st.session_state.fuzzy_number_weights_draft, "Pesos")
+        if errors:
+            st.error("Há campos em branco. Corrija antes de salvar.")
+            for msg in errors:
+                st.caption(msg)
+            return
         st.session_state.fuzzy_number_weights = copy.deepcopy(
             st.session_state.fuzzy_number_weights_draft
         )

@@ -25,6 +25,14 @@ def _init_alternatives_draft():
         st.session_state.next_alt_id_draft = base_snapshot["next_alt_id"]
         st.session_state.alternatives_classes_draft_signature = signature
 
+
+def _validate_alternatives(draft: dict) -> list[str]:
+    errors = []
+    for alt_id, name in draft.items():
+        if not str(name).strip():
+            errors.append(f"Alternativa {alt_id} está sem descrição.")
+    return errors
+
 def render_alternatives():
     st.header("Parametrização das Alternativas")
 
@@ -77,6 +85,12 @@ def render_alternatives():
         st.rerun()
 
     if st.button("💾 Salvar Alterações", key="save_alternatives"):
+        errors = _validate_alternatives(st.session_state.alternatives_draft)
+        if errors:
+            st.error("Há campos em branco. Corrija antes de salvar.")
+            for msg in errors:
+                st.caption(msg)
+            return
         st.session_state.alternatives = copy.deepcopy(st.session_state.alternatives_draft)
         st.session_state.next_alt_id = st.session_state.next_alt_id_draft
         st.session_state.alternatives_classes_draft_signature = _draft_signature(

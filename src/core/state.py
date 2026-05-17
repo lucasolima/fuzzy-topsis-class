@@ -10,11 +10,23 @@ def load_data(filename):
     with open(filepath, "r", encoding="utf-8") as f:
         return json.load(f)
 
+
+def _next_id_from_mapping(mapping: dict, prefix: str, fallback: int = 1) -> int:
+    max_id = 0
+    for key in mapping.keys():
+        if not key.startswith(prefix):
+            continue
+        suffix = key[len(prefix):]
+        if suffix.isdigit():
+            max_id = max(max_id, int(suffix))
+
+    return max_id + 1 if max_id else fallback
+
 def initialize_state():
     """Inicializa as variáveis de sessão necessárias da aplicação usando Data-Driven config."""
     default_states = {
         "alternatives": lambda: load_data('alternatives.json'),
-        'next_alt_id': 10,
+        'next_alt_id': lambda: _next_id_from_mapping(load_data('alternatives.json'), "ALT", 1),
         "fuzzy_number_alternatives": lambda: load_data('fuzzy_number_alternatives.json'),
         "fuzzy_number_weights": lambda: load_data('fuzzy_number_weights.json'),
         'classes': lambda: load_data('classes.json'),

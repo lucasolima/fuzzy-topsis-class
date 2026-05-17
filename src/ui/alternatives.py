@@ -1,8 +1,33 @@
+import copy
+import json
+
 import streamlit as st
-from src.core.state import add_alternative, update_alternative, delete_alternative
+
+from src.ui.classes_config import render_classes
+
+
+def _draft_signature(values: dict) -> str:
+    return json.dumps(values, sort_keys=True, ensure_ascii=False)
+
+
+def _init_alternatives_draft():
+    base_snapshot = {
+        "alternatives": st.session_state.get("alternatives", {}),
+        "next_alt_id": st.session_state.get("next_alt_id", 1),
+    }
+    signature = _draft_signature(base_snapshot)
+
+    if (
+        "alternatives_classes_draft_signature" not in st.session_state
+        or st.session_state.alternatives_classes_draft_signature != signature
+    ):
+        st.session_state.alternatives_draft = copy.deepcopy(base_snapshot["alternatives"])
+        st.session_state.next_alt_id_draft = base_snapshot["next_alt_id"]
+        st.session_state.alternatives_classes_draft_signature = signature
 
 def render_alternatives():
     st.header("Parametrização das Alternativas")
+
     
     st.markdown(
         "Informe ao sistema quais são as alternatives que iremos "
@@ -11,8 +36,8 @@ def render_alternatives():
 
     st.subheader("Lista de Alternativas")
 
-    # Pegamos o layout da lista atual guardada no state
-    current_alternatives = list(st.session_state.alternatives.items())
+    _init_alternatives_draft()
+    current_alternatives = list(st.session_state.alternatives_draft.items())
     
     if not current_alternatives:
         st.info("Nenhuma alternativa cadastrada. Clique no botão abaixo para adicionar.")
@@ -34,25 +59,35 @@ def render_alternatives():
                 
                 # Se algo foi modificado, atualiza no core
                 if new_val != alt_value:
-                    update_alternative(alt_id, new_val)
+                    st.session_state.alternatives_draft[alt_id] = new_val
             
             with col_del:
                 # Botão com símbolo X de excluir
                 if st.button("❌", key=f"del_{alt_id}", help=f"Excluir {alt_id}"):
-                    delete_alternative(alt_id)
+                    del st.session_state.alternatives_draft[alt_id]
                     st.rerun()
 
     st.markdown("---")
     
-    col1, col2 = st.columns([1, 4])
-    
-    with col1:
-        # Botão com símbolo ➕ para adicionar novo input de alternativa
-        if st.button("➕ Adicionar", key="add_alternative_btn", use_container_width=True):
-            add_alternative()
-            st.rerun()
+    # Botão com símbolo ➕ para adicionar novo input de alternativa
+    if st.button("➕ Adicionar", key="add_alternative_btn"):
+        alt_id = f"ALT{st.session_state.next_alt_id_draft}"
+        st.session_state.alternatives_draft[alt_id] = ""
+        st.session_state.next_alt_id_draft += 1
+        st.rerun()
 
-    from src.ui.classes_config import render_classes
+    if st.button("💾 Salvar Alterações", key="save_alternatives"):
+        st.session_state.alternatives = copy.deepcopy(st.session_state.alternatives_draft)
+        st.session_state.next_alt_id = st.session_state.next_alt_id_draft
+        st.session_state.alternatives_classes_draft_signature = _draft_signature(
+            {
+                "alternatives": st.session_state.alternatives,
+                "next_alt_id": st.session_state.next_alt_id,
+            }
+        )
+        st.success("Alterações salvas com sucesso!")
+        st.rerun()
+
     render_classes()
 
 

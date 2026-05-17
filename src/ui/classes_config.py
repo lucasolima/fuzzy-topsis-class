@@ -1,9 +1,28 @@
+import copy
+import json
+
 import streamlit as st
-from src.core.class_state import (
-    add_class, 
-    update_class_value, 
-    delete_class
-)
+
+
+def _draft_signature(values: dict) -> str:
+    return json.dumps(values, sort_keys=True, ensure_ascii=False)
+
+
+def _init_classes_draft():
+    base_snapshot = {
+        "classes": st.session_state.get("classes", {}),
+        "next_class_id": st.session_state.get("next_class_id", 1),
+    }
+    signature = _draft_signature(base_snapshot)
+
+    if (
+        "classes_draft_signature" not in st.session_state
+        or st.session_state.classes_draft_signature != signature
+    ):
+        st.session_state.classes_draft = copy.deepcopy(base_snapshot["classes"])
+        st.session_state.next_class_id_draft = base_snapshot["next_class_id"]
+        st.session_state.classes_draft_signature = signature
+
 
 def render_classes():
     st.markdown("---")
@@ -14,7 +33,8 @@ def render_classes():
         "para classificar as alternativas." 
     )
 
-    class_keys = list(st.session_state.classes.keys())
+    _init_classes_draft()
+    class_keys = list(st.session_state.classes_draft.keys())
     #available_terms = list(st.session_state.fuzzy_number_alternatives.keys())
     
     if not class_keys:
@@ -25,7 +45,7 @@ def render_classes():
         with col_desc: st.subheader("Lista de Classes")
         
         for cid in class_keys:
-            data = st.session_state.classes[cid]
+            data = st.session_state.classes_draft[cid]
             
             col_desc, col_del = st.columns([9, 1])
             
@@ -38,17 +58,32 @@ def render_classes():
                     placeholder="Ex: Alta Prioridade"
                 )
                 if new_desc != data["description"]:
-                    update_class_value(cid, "description", new_desc)
+                    st.session_state.classes_draft[cid]["description"] = new_desc
 
             with col_del:
                 if st.button("❌", key=f"class_del_{cid}", help=f"Excluir {cid}"):
-                    delete_class(cid)
+                    del st.session_state.classes_draft[cid]
                     st.rerun()
 
     st.markdown("---")
     
-    col1, col2 = st.columns([1, 4])
-    with col1:
-        if st.button("➕ Adicionar", key="add_class_btn", use_container_width=True):
-            add_class()
-            st.rerun()
+    if st.button("➕ Adicionar", key="add_class_btn"):
+        class_id = f"CLA{st.session_state.next_class_id_draft}"
+        st.session_state.classes_draft[class_id] = {
+            "description": "",
+            "alternative_term": None,
+        }
+        st.session_state.next_class_id_draft += 1
+        st.rerun()
+
+    if st.button("💾 Salvar Alterações", key="save_classes"):
+        st.session_state.classes = copy.deepcopy(st.session_state.classes_draft)
+        st.session_state.next_class_id = st.session_state.next_class_id_draft
+        st.session_state.classes_draft_signature = _draft_signature(
+            {
+                "classes": st.session_state.classes,
+                "next_class_id": st.session_state.next_class_id,
+            }
+        )
+        st.success("Alterações salvas com sucesso!")
+        st.rerun()

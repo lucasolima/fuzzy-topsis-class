@@ -36,6 +36,7 @@ def render_evaluations():
         st.session_state.evaluation_draft = copy.deepcopy(st.session_state.evaluations)
         st.session_state.evaluation_draft_signature = current_signature
 
+
     crit_items = list(criteria.items())
     alt_items = list(alternatives.items())
 

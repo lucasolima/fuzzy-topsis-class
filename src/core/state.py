@@ -137,9 +137,11 @@ def initialize_projects():
         st.session_state.current_project_id = sorted(st.session_state.projects.keys())[0]
 
     current_project_id = st.session_state.current_project_id
-    if current_project_id in st.session_state.projects:
+    loaded_project_id = st.session_state.get("loaded_project_id")
+    if current_project_id in st.session_state.projects and loaded_project_id != current_project_id:
         _apply_project_snapshot(st.session_state.projects[current_project_id]["state"])
-    _clear_drafts()
+        _clear_drafts()
+        st.session_state.loaded_project_id = current_project_id
 
 
 def list_projects() -> dict:
@@ -184,6 +186,7 @@ def switch_project(project_id: int):
     st.session_state.current_project_id = project_id
     _apply_project_snapshot(st.session_state.projects[project_id]["state"])
     _clear_drafts()
+    st.session_state.loaded_project_id = project_id
 
 def initialize_state():
     """Inicializa as variáveis de sessão necessárias da aplicação usando Data-Driven config."""

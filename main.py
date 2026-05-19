@@ -24,58 +24,65 @@ def main():
     # 2. Inicializa gerência de estado (regras e dados visuais)
     initialize_state()
 
+    def _show_projects_modal():
+        @st.dialog("Projetos")
+        def _modal_body():
+            projects = list_projects()
+            project_ids = list(projects.keys())
+            current_project_id = st.session_state.current_project_id
+            if current_project_id not in project_ids:
+                current_project_id = project_ids[0]
+
+            selected_project_id = st.selectbox(
+                "Projeto Atual:",
+                project_ids,
+                index=project_ids.index(current_project_id),
+                format_func=lambda pid: projects.get(pid, f"Projeto {pid}"),
+                key="project_select",
+            )
+
+            if selected_project_id != st.session_state.current_project_id:
+                switch_project(selected_project_id)
+                st.rerun()
+
+            new_project_name = st.text_input(
+                "Novo Projeto",
+                placeholder="Nome do projeto",
+                key="project_new_name",
+            )
+            if st.button("Criar Projeto", key="project_create"):
+                if new_project_name.strip():
+                    new_project_id = create_project(new_project_name.strip())
+                    switch_project(new_project_id)
+                    st.rerun()
+                else:
+                    st.warning("Informe um nome para o projeto.")
+
+            rename_value = st.text_input(
+                "Renomear Projeto",
+                value=projects.get(st.session_state.current_project_id, ""),
+                key="rename_project_input",
+            )
+            if st.button("Renomear Projeto", key="project_rename"):
+                if rename_value.strip():
+                    rename_project(st.session_state.current_project_id, rename_value.strip())
+                    st.rerun()
+                else:
+                    st.warning("Informe um nome para o projeto.")
+
+            if st.button("Excluir Projeto", key="project_delete"):
+                if len(projects) <= 1:
+                    st.warning("Não é possível excluir o único projeto existente.")
+                else:
+                    next_project_id = delete_project(st.session_state.current_project_id)
+                    if next_project_id is not None:
+                        switch_project(next_project_id)
+                    st.rerun()
+
+        _modal_body()
+
     # Menu Lateral
     with st.sidebar:
-        st.header("Projetos")
-
-        projects = list_projects()
-        project_ids = list(projects.keys())
-        current_project_id = st.session_state.current_project_id
-        if current_project_id not in project_ids:
-            current_project_id = project_ids[0]
-        selected_project_id = st.selectbox(
-            "Projeto Atual:",
-            project_ids,
-            index=project_ids.index(current_project_id),
-            format_func=lambda pid: projects.get(pid, f"Projeto {pid}"),
-        )
-
-        if selected_project_id != st.session_state.current_project_id:
-            switch_project(selected_project_id)
-            st.rerun()
-
-        new_project_name = st.text_input("Novo Projeto", placeholder="Nome do projeto")
-        if st.button("Criar Projeto"):
-            if new_project_name.strip():
-                new_project_id = create_project(new_project_name.strip())
-                switch_project(new_project_id)
-                st.rerun()
-            else:
-                st.warning("Informe um nome para o projeto.")
-
-        rename_value = st.text_input(
-            "Renomear Projeto",
-            value=projects.get(st.session_state.current_project_id, ""),
-            key="rename_project_input",
-        )
-        if st.button("Renomear Projeto"):
-            if rename_value.strip():
-                rename_project(st.session_state.current_project_id, rename_value.strip())
-                st.rerun()
-            else:
-                st.warning("Informe um nome para o projeto.")
-
-        if st.button("Excluir Projeto"):
-            if len(projects) <= 1:
-                st.warning("Não é possível excluir o único projeto existente.")
-            else:
-                next_project_id = delete_project(st.session_state.current_project_id)
-                if next_project_id is not None:
-                    switch_project(next_project_id)
-                st.rerun()
-
-        st.markdown("---")
-
         st.header("Menu Principal")
         
         secao = st.selectbox("Selecione a Seção:", ["Parametrização do Modelo", "Avaliação das Alternativas", "Classificação Final"])
@@ -147,6 +154,11 @@ def main():
                         
             st.success("Dados preenchidos com sucesso!")
             st.rerun()
+
+        st.markdown("---")
+        st.header("Projetos")
+        if st.button("Gerenciar Projetos"):
+            _show_projects_modal()
 
     # 2.1 Sincroniza estado da interface com a camada de regras de negócio estática
     system_data.update_from_state(st.session_state)

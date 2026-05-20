@@ -3,6 +3,8 @@ import json
 
 import streamlit as st
 
+from src.core.state import save_current_project_snapshot
+
 
 def _draft_signature(values: dict) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
@@ -130,6 +132,8 @@ def render_criteria():
     st.markdown("Cadastre os critérios (Benefício ou Custo), as descrições de valoração e os termos linguísticos mínimos aceitos por classe em relação a este critério.")
     
     _init_criteria_draft()
+    project_id = st.session_state.get("current_project_id", "default")
+    key_prefix = f"p{project_id}_"
     criteria = st.session_state.criteria_draft
     classes = st.session_state.get("classes", {})
 
@@ -159,7 +163,7 @@ def render_criteria():
                     new_name = st.text_input(
                         "Nome do Critério", 
                         value=crit_data["criterion"], 
-                        key=f"nome_{crit_id}"
+                        key=f"{key_prefix}nome_{crit_id}"
                     )
                     if new_name != crit_data["criterion"]:
                         update_criterion_field(criteria, crit_id, "criterion", new_name)
@@ -171,7 +175,7 @@ def render_criteria():
                         "Tipo", 
                         options=types, 
                         index=idx_tipo, 
-                        key=f"tipo_{crit_id}"
+                        key=f"{key_prefix}tipo_{crit_id}"
                     )
                     if new_type != crit_data["type"]:
                         update_criterion_field(criteria, crit_id, "type", new_type)
@@ -179,7 +183,7 @@ def render_criteria():
                 with col_del:
                     st.write("") 
                     st.write("") 
-                    if st.button("❌", key=f"del_cri_{crit_id}", help=f"Excluir {crit_id}", use_container_width=True):
+                    if st.button("❌", key=f"{key_prefix}del_cri_{crit_id}", help=f"Excluir {crit_id}", use_container_width=True):
                         delete_criterion(criteria, crit_id)
                         st.rerun()
 
@@ -198,7 +202,12 @@ def render_criteria():
                 for i, desc in enumerate(crit_data["descriptions"]):
                     cd1, cd2, cd3, cd_del = st.columns([5, 2, 2, 1])
                     with cd1:
-                        n_desc = st.text_input("Descrição", value=desc["description"], key=f"d_desc_{crit_id}_{i}", label_visibility="collapsed")
+                        n_desc = st.text_input(
+                            "Descrição",
+                            value=desc["description"],
+                            key=f"{key_prefix}d_desc_{crit_id}_{i}",
+                            label_visibility="collapsed",
+                        )
                         if n_desc != desc["description"]:
                             update_criterion_description(criteria, crit_id, i, "description", n_desc)
                             
@@ -208,7 +217,13 @@ def render_criteria():
                             t_alt_val = options_alt[0]
                         idx_alt = options_alt.index(t_alt_val) if t_alt_val in options_alt else 0
                         
-                        n_t_alt = st.selectbox("Termo Alt", options=options_alt, index=idx_alt, key=f"d_talt_{crit_id}_{i}", label_visibility="collapsed")
+                        n_t_alt = st.selectbox(
+                            "Termo Alt",
+                            options=options_alt,
+                            index=idx_alt,
+                            key=f"{key_prefix}d_talt_{crit_id}_{i}",
+                            label_visibility="collapsed",
+                        )
                         if n_t_alt != desc["alternative_term"] and terms_alt:
                             update_criterion_description(criteria, crit_id, i, "alternative_term", n_t_alt)
                             
@@ -218,18 +233,24 @@ def render_criteria():
                             t_peso_val = weight_options[0]
                         idx_peso = weight_options.index(t_peso_val) if t_peso_val in weight_options else 0
                         
-                        n_t_peso = st.selectbox("Termo Peso", options=weight_options, index=idx_peso, key=f"d_tpeso_{crit_id}_{i}", label_visibility="collapsed")
+                        n_t_peso = st.selectbox(
+                            "Termo Peso",
+                            options=weight_options,
+                            index=idx_peso,
+                            key=f"{key_prefix}d_tpeso_{crit_id}_{i}",
+                            label_visibility="collapsed",
+                        )
                         if n_t_peso != desc["weight_term"] and terms_peso:
                             update_criterion_description(criteria, crit_id, i, "weight_term", n_t_peso)
                             
                     with cd_del:
-                        if st.button("🗑️", key=f"del_d_{crit_id}_{i}"):
+                        if st.button("🗑️", key=f"{key_prefix}del_d_{crit_id}_{i}"):
                             delete_criterion_description(criteria, crit_id, i)
                             st.rerun()
                 
                 col_btn_add_d, _ = st.columns([3, 7])
                 with col_btn_add_d:
-                    if st.button("➕ Adicionar Descrição", key=f"add_d_{crit_id}"):
+                    if st.button("➕ Adicionar Descrição", key=f"{key_prefix}add_d_{crit_id}"):
                         add_criterion_description(criteria, crit_id)
                         st.rerun()
 
@@ -247,23 +268,35 @@ def render_criteria():
                     for cid, cdata in crit_data["classes"].items():
                         cc1, cc2, _ = st.columns([5, 3, 2])
                         with cc1:
-                            st.text_input("Classe", value=cdata["description"], disabled=True, key=f"c_desc_{crit_id}_{cid}", label_visibility="collapsed")
+                            st.text_input(
+                                "Classe",
+                                value=cdata["description"],
+                                disabled=True,
+                                key=f"{key_prefix}c_desc_{crit_id}_{cid}",
+                                label_visibility="collapsed",
+                            )
                         with cc2:
                             current_c_alt = cdata["alternative_term"]
                             if current_c_alt not in options_alt and terms_alt:
                                 current_c_alt = options_alt[0]
                             idx_calt = options_alt.index(current_c_alt) if current_c_alt in options_alt else 0
                             
-                            n_c_alt = st.selectbox("Termo Mínimo", options=options_alt, index=idx_calt, key=f"c_talt_{crit_id}_{cid}", label_visibility="collapsed")
+                            n_c_alt = st.selectbox(
+                                "Termo Mínimo",
+                                options=options_alt,
+                                index=idx_calt,
+                                key=f"{key_prefix}c_talt_{crit_id}_{cid}",
+                                label_visibility="collapsed",
+                            )
                             if n_c_alt != cdata["alternative_term"] and terms_alt:
                                 update_criterion_class(criteria, crit_id, cid, "alternative_term", n_c_alt)
 
     st.markdown("---")
-    if st.button("➕ Adicionar", key="add_criteria_btn"):
+    if st.button("➕ Adicionar", key=f"{key_prefix}add_criteria_btn"):
         add_criterion(criteria, "next_cri_id_draft", classes)
         st.rerun()
 
-    if st.button("💾 Salvar Alterações", key="save_criteria"):
+    if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_criteria"):
         errors = _validate_criteria(criteria)
         if errors:
             st.error("Há campos em branco. Corrija antes de salvar.")
@@ -279,5 +312,6 @@ def render_criteria():
                 "classes": st.session_state.get("classes", {}),
             }
         )
+        save_current_project_snapshot()
         st.success("Alterações salvas com sucesso!")
         st.rerun()

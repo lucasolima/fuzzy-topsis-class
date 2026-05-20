@@ -1,5 +1,7 @@
 import streamlit as st
 
+from src.core.state import save_current_project_snapshot
+
 def render_criteria_weights():
     st.header("Peso dos Critérios")
     st.markdown(
@@ -9,6 +11,8 @@ def render_criteria_weights():
     
     criteria = st.session_state.get("criteria", {})
     fuzzy_weights = st.session_state.get("fuzzy_number_weights", {})
+    project_id = st.session_state.get("current_project_id", "default")
+    key_prefix = f"p{project_id}_"
     
     if not criteria:
         st.warning("Nenhum critério cadastrado. Retorne à aba de Critérios.")
@@ -28,7 +32,7 @@ def render_criteria_weights():
     # Prepara a lista de chaves de critérios para iterarmos aos pares
     cri_keys = list(criteria.keys())
     
-    with st.form("form_pesos"):
+    with st.form(f"{key_prefix}form_pesos"):
         new_weights = {}
         
         # Itera de 2 em 2
@@ -53,7 +57,7 @@ def render_criteria_weights():
                     options=weights_options,
                     index=idx_atual_1,
                     placeholder="Selecione um nível de importância...",
-                    key=f"peso_{cri_id_1}",
+                    key=f"{key_prefix}peso_{cri_id_1}",
                     label_visibility="collapsed"
                 )
                 new_weights[cri_id_1] = novo_peso_1
@@ -77,7 +81,7 @@ def render_criteria_weights():
                         options=weights_options,
                         index=idx_atual_2,
                         placeholder="Selecione um nível de importância...",
-                        key=f"peso_{cri_id_2}",
+                        key=f"{key_prefix}peso_{cri_id_2}",
                         label_visibility="collapsed"
                     )
                     new_weights[cri_id_2] = novo_peso_2
@@ -92,4 +96,5 @@ def render_criteria_weights():
             for cid, val in new_weights.items():
                 if val is not None:
                     st.session_state.criteria_weights[cid] = val
+            save_current_project_snapshot()
             st.rerun()

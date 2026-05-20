@@ -3,6 +3,7 @@ import json
 
 import streamlit as st
 
+from src.core.state import save_current_project_snapshot
 from src.ui.classes_config import render_classes
 
 
@@ -45,6 +46,8 @@ def render_alternatives():
     st.subheader("Lista de Alternativas")
 
     _init_alternatives_draft()
+    project_id = st.session_state.get("current_project_id", "default")
+    key_prefix = f"p{project_id}_"
     current_alternatives = list(st.session_state.alternatives_draft.items())
     
     if not current_alternatives:
@@ -61,7 +64,7 @@ def render_alternatives():
                     label=f"Alternativa {alt_id}",
                     value=alt_value,
                     label_visibility="collapsed",
-                    key=f"input_{alt_id}",
+                    key=f"{key_prefix}input_{alt_id}",
                     placeholder="Digite o nome da alternativa (Ex: Sistema X - Módulo Y)..."
                 )
                 
@@ -71,20 +74,20 @@ def render_alternatives():
             
             with col_del:
                 # Botão com símbolo X de excluir
-                if st.button("❌", key=f"del_{alt_id}", help=f"Excluir {alt_id}"):
+                if st.button("❌", key=f"{key_prefix}del_{alt_id}", help=f"Excluir {alt_id}"):
                     del st.session_state.alternatives_draft[alt_id]
                     st.rerun()
 
     st.markdown("---")
     
     # Botão com símbolo ➕ para adicionar novo input de alternativa
-    if st.button("➕ Adicionar", key="add_alternative_btn"):
+    if st.button("➕ Adicionar", key=f"{key_prefix}add_alternative_btn"):
         alt_id = f"ALT{st.session_state.next_alt_id_draft}"
         st.session_state.alternatives_draft[alt_id] = ""
         st.session_state.next_alt_id_draft += 1
         st.rerun()
 
-    if st.button("💾 Salvar Alterações", key="save_alternatives"):
+    if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_alternatives"):
         errors = _validate_alternatives(st.session_state.alternatives_draft)
         if errors:
             st.error("Há campos em branco. Corrija antes de salvar.")
@@ -99,9 +102,8 @@ def render_alternatives():
                 "next_alt_id": st.session_state.next_alt_id,
             }
         )
+        save_current_project_snapshot()
         st.success("Alterações salvas com sucesso!")
         st.rerun()
 
     render_classes()
-
-

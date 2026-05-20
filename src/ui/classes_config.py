@@ -3,6 +3,8 @@ import json
 
 import streamlit as st
 
+from src.core.state import save_current_project_snapshot
+
 
 def _draft_signature(values: dict) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
@@ -44,6 +46,8 @@ def render_classes():
     )
 
     _init_classes_draft()
+    project_id = st.session_state.get("current_project_id", "default")
+    key_prefix = f"p{project_id}_"
     class_keys = list(st.session_state.classes_draft.keys())
     #available_terms = list(st.session_state.fuzzy_number_alternatives.keys())
     
@@ -63,7 +67,7 @@ def render_classes():
                 new_desc = st.text_input(
                     "Descrição Classe", 
                     value=data["description"], 
-                    key=f"class_desc_{cid}", 
+                    key=f"{key_prefix}class_desc_{cid}", 
                     label_visibility="collapsed",
                     placeholder="Ex: Alta Prioridade"
                 )
@@ -71,13 +75,13 @@ def render_classes():
                     st.session_state.classes_draft[cid]["description"] = new_desc
 
             with col_del:
-                if st.button("❌", key=f"class_del_{cid}", help=f"Excluir {cid}"):
+                if st.button("❌", key=f"{key_prefix}class_del_{cid}", help=f"Excluir {cid}"):
                     del st.session_state.classes_draft[cid]
                     st.rerun()
 
     st.markdown("---")
     
-    if st.button("➕ Adicionar", key="add_class_btn", disabled=len(class_keys) >= 3):
+    if st.button("➕ Adicionar", key=f"{key_prefix}add_class_btn", disabled=len(class_keys) >= 3):
         class_id = f"CLA{st.session_state.next_class_id_draft}"
         st.session_state.classes_draft[class_id] = {
             "description": "",
@@ -86,7 +90,7 @@ def render_classes():
         st.session_state.next_class_id_draft += 1
         st.rerun()
 
-    if st.button("💾 Salvar Alterações", key="save_classes"):
+    if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_classes"):
         errors = _validate_classes(st.session_state.classes_draft)
         if errors:
             st.error("Há campos em branco. Corrija antes de salvar.")
@@ -101,5 +105,6 @@ def render_classes():
                 "next_class_id": st.session_state.next_class_id,
             }
         )
+        save_current_project_snapshot()
         st.success("Alterações salvas com sucesso!")
         st.rerun()

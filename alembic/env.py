@@ -1,10 +1,8 @@
-import os
 import sys
 from logging.config import fileConfig
 from pathlib import Path
 
 from alembic import context
-from dotenv import load_dotenv
 from sqlalchemy import engine_from_config
 from sqlalchemy import pool
 
@@ -22,8 +20,7 @@ sys.path.append(str(REPO_ROOT))
 
 from src.db.base import Base  # noqa: E402
 from src.db import models  # noqa: F401,E402
-
-load_dotenv(REPO_ROOT / ".env")
+from src.db.config import build_database_url  # noqa: E402
 
 target_metadata = Base.metadata
 
@@ -31,21 +28,6 @@ target_metadata = Base.metadata
 # can be acquired:
 # my_important_option = config.get_main_option("my_important_option")
 # ... etc.
-
-
-def _build_database_url() -> str:
-    env_url = os.getenv("DATABASE_URL")
-    if env_url:
-        return env_url
-
-    user = os.getenv("POSTGRES_USER", "postgres")
-    password = os.getenv("POSTGRES_PASSWORD", "postgres")
-    host = os.getenv("POSTGRES_HOST", "localhost")
-    port = os.getenv("POSTGRES_PORT", "5432")
-    db = os.getenv("POSTGRES_DB", "postgres")
-
-    return f"postgresql+psycopg2://{user}:{password}@{host}:{port}/{db}"
-
 
 def run_migrations_offline() -> None:
     """Run migrations in 'offline' mode.
@@ -59,7 +41,7 @@ def run_migrations_offline() -> None:
     script output.
 
     """
-    url = _build_database_url()
+    url = build_database_url()
     context.configure(
         url=url,
         target_metadata=target_metadata,
@@ -79,7 +61,7 @@ def run_migrations_online() -> None:
     and associate a connection with the context.
 
     """
-    config.set_main_option("sqlalchemy.url", _build_database_url())
+    config.set_main_option("sqlalchemy.url", build_database_url())
 
     connectable = engine_from_config(
         config.get_section(config.config_ini_section, {}),

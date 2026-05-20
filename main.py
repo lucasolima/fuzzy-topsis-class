@@ -5,6 +5,7 @@ from src.core.state import (
     initialize_state,
     list_projects,
     rename_project,
+    save_current_project_snapshot,
     switch_project,
 )
 from src.core.data_repository import system_data
@@ -33,16 +34,23 @@ def main():
             if current_project_id not in project_ids:
                 current_project_id = project_ids[0]
 
-            selected_project_id = st.selectbox(
+            def _on_project_select():
+                selected = st.session_state._project_selectbox
+                if selected != st.session_state.current_project_id:
+                    switch_project(selected)
+                    st.session_state._modal_should_close = True
+
+            st.selectbox(
                 "Projeto Atual:",
                 project_ids,
                 index=project_ids.index(current_project_id),
                 format_func=lambda pid: projects.get(pid, f"Projeto {pid}"),
-                key="project_select",
+                key="_project_selectbox",
+                on_change=_on_project_select,
             )
 
-            if selected_project_id != st.session_state.current_project_id:
-                switch_project(selected_project_id)
+            if st.session_state.get("_modal_should_close"):
+                st.session_state._modal_should_close = False
                 st.rerun()
 
             new_project_name = st.text_input(
@@ -54,6 +62,7 @@ def main():
                 if new_project_name.strip():
                     new_project_id = create_project(new_project_name.strip())
                     switch_project(new_project_id)
+                    st.session_state._modal_should_close = True
                     st.rerun()
                 else:
                     st.warning("Informe um nome para o projeto.")
@@ -66,7 +75,6 @@ def main():
             if st.button("Renomear Projeto", key="project_rename"):
                 if rename_value.strip():
                     rename_project(st.session_state.current_project_id, rename_value.strip())
-                    st.rerun()
                 else:
                     st.warning("Informe um nome para o projeto.")
 
@@ -77,30 +85,43 @@ def main():
                     next_project_id = delete_project(st.session_state.current_project_id)
                     if next_project_id is not None:
                         switch_project(next_project_id)
+                    st.session_state._modal_should_close = True
                     st.rerun()
 
         _modal_body()
+
+    # Verifica se o projeto foi alterado após o modal fechar
+    if st.session_state.get("_project_changed"):
+        st.session_state._project_changed = False
+        st.rerun()
 
     # Menu Lateral
     with st.sidebar:
         st.header("Menu Principal")
         
-        secao = st.selectbox("Selecione a Seção:", ["Parametrização do Modelo", "Avaliação das Alternativas", "Classificação Final"])
+        secao = st.selectbox(
+            "Selecione a Seção:",
+            ["Parametrização do Modelo", "Avaliação das Alternativas", "Classificação Final"],
+            key="sidebar_section",
+        )
         
         if secao == "Parametrização do Modelo":
             selected_menu = st.radio(
                 "Opções de Parametrização:",
-                ["Alternativas e Classes", "Números Fuzzy", "Critérios"]
+                ["Alternativas e Classes", "Números Fuzzy", "Critérios"],
+                key="sidebar_menu_param",
             )
         elif secao == "Avaliação das Alternativas":
             selected_menu = st.radio(
                 "Opções de Avaliação:",
-                ["Alternativas", "Pesos"]
+                ["Alternativas", "Pesos"],
+                key="sidebar_menu_eval",
             )
         else:
             selected_menu = st.radio(
                 "Opções de Classificação:",
-                ["Matriz de Decisão", "Classificação Final"]
+                ["Matriz de Decisão", "Classificação Final"],
+                key="sidebar_menu_classif",
             )
         
         st.markdown("---")
@@ -151,7 +172,8 @@ def main():
                     crit_id = cri_keys[i]
                     if p in fuzzy_weights:
                         st.session_state.criteria_weights[crit_id] = fuzzy_weights[p]["description"]
-                        
+
+            save_current_project_snapshot()
             st.success("Dados preenchidos com sucesso!")
             st.rerun()
 

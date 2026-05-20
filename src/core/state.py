@@ -4,6 +4,16 @@ import os
 
 import streamlit as st
 
+from src.db.repository import (
+    create_project as db_create_project,
+    delete_project as db_delete_project,
+    ensure_schema,
+    list_projects as db_list_projects,
+    load_project_state,
+    rename_project as db_rename_project,
+    save_project_state,
+)
+
 def load_data(filename):
     """Carrega dados de um arquivo JSON da pasta data/."""
     # Encontra o caminho absoluto da pasta data baseada na raiz do projeto
@@ -53,8 +63,8 @@ def _build_default_project_state() -> dict:
         "next_alt_id": _next_id_from_mapping(alternatives, "ALT", 1),
         "fuzzy_number_alternatives": fuzzy_number_alternatives,
         "fuzzy_number_weights": fuzzy_number_weights,
-        "next_fuzzy_alt_id": 1,
-        "next_fuzzy_weight_id": 1,
+        "next_fuzzy_alt_id": _next_id_from_mapping(fuzzy_number_alternatives, "ALT", 1),
+        "next_fuzzy_weight_id": _next_id_from_mapping(fuzzy_number_weights, "PESO", 1),
         "classes": classes,
         "next_class_id": _next_id_from_mapping(classes, "CLA", 1),
         "criteria": criteria,
@@ -107,6 +117,60 @@ def _clear_drafts():
             del st.session_state[key]
 
 
+def _clear_widget_state():
+    prefixes = (
+        "input_",
+        "class_desc_",
+        "class_del_",
+        "term_",
+        "desc_",
+        "l_",
+        "m_",
+        "u_",
+        "del_",
+        "add_",
+        "save_",
+        "nome_",
+        "tipo_",
+        "del_cri_",
+        "d_desc_",
+        "d_talt_",
+        "d_tpeso_",
+        "del_d_",
+        "c_desc_",
+        "c_talt_",
+        "aval_",
+        "peso_",
+    )
+    exact_keys = {
+        "_project_selectbox",
+        "_modal_should_close",
+        "project_new_name",
+        "rename_project_input",
+    }
+
+    for key in list(st.session_state.keys()):
+        if key in exact_keys or key.startswith(prefixes):
+            del st.session_state[key]
+
+
+def _preserve_ui_state() -> dict:
+    keys = (
+        "sidebar_section",
+        "sidebar_menu_param",
+        "sidebar_menu_eval",
+        "sidebar_menu_classif",
+    )
+    return {key: st.session_state[key] for key in keys if key in st.session_state}
+
+
+def _reset_session_state(preserved: dict) -> None:
+    for key in list(st.session_state.keys()):
+        if key not in preserved:
+            del st.session_state[key]
+    st.session_state.update(preserved)
+
+
 def _get_project_snapshot_from_state() -> dict:
     snapshot = {}
     for key in PROJECT_STATE_KEYS:
@@ -121,72 +185,81 @@ def _apply_project_snapshot(snapshot: dict):
             st.session_state[key] = copy.deepcopy(snapshot[key])
 
 
+def _hydrate_project_state(state: dict) -> dict:
+    return {
+        **state,
+        "next_alt_id": _next_id_from_mapping(state.get("alternatives", {}), "ALT", 1),
+        "next_fuzzy_alt_id": _next_id_from_mapping(state.get("fuzzy_number_alternatives", {}), "ALT", 1),
+        "next_fuzzy_weight_id": _next_id_from_mapping(state.get("fuzzy_number_weights", {}), "PESO", 1),
+        "next_class_id": _next_id_from_mapping(state.get("classes", {}), "CLA", 1),
+        "next_cri_id": _next_id_from_mapping(state.get("criteria", {}), "CRI", 1),
+    }
+
+
 def initialize_projects():
-    if "projects" not in st.session_state:
+    ensure_schema()
+    projects = db_list_projects()
+    if not projects:
         default_state = _build_default_project_state()
-        st.session_state.projects = {
-            1: {
-                "name": "Projeto Padrão",
-                "state": default_state,
-            }
-        }
-        st.session_state.current_project_id = 1
-        st.session_state.next_project_id = 2
+        project_id = db_create_project("Projeto Padrão")
+        save_project_state(project_id, default_state)
+        projects = db_list_projects()
 
     if "current_project_id" not in st.session_state:
-        st.session_state.current_project_id = sorted(st.session_state.projects.keys())[0]
+        st.session_state.current_project_id = sorted(projects.keys())[0]
+    elif st.session_state.current_project_id not in projects:
+        st.session_state.current_project_id = sorted(projects.keys())[0]
 
     current_project_id = st.session_state.current_project_id
     loaded_project_id = st.session_state.get("loaded_project_id")
-    if current_project_id in st.session_state.projects and loaded_project_id != current_project_id:
-        _apply_project_snapshot(st.session_state.projects[current_project_id]["state"])
+    if loaded_project_id != current_project_id:
+        snapshot = load_project_state(current_project_id)
+        _apply_project_snapshot(_hydrate_project_state(snapshot))
         _clear_drafts()
         st.session_state.loaded_project_id = current_project_id
 
 
 def list_projects() -> dict:
-    return {pid: data["name"] for pid, data in st.session_state.projects.items()}
+    return db_list_projects()
 
 
 def create_project(name: str) -> int:
-    project_id = st.session_state.next_project_id
-    st.session_state.projects[project_id] = {
-        "name": name,
-        "state": _build_blank_project_state(),
-    }
-    st.session_state.next_project_id += 1
+    project_id = db_create_project(name)
+    save_project_state(project_id, _build_blank_project_state())
     return project_id
 
 
 def rename_project(project_id: int, name: str):
-    if project_id in st.session_state.projects:
-        st.session_state.projects[project_id]["name"] = name
+    db_rename_project(project_id, name)
 
 
 def delete_project(project_id: int) -> int | None:
-    if project_id in st.session_state.projects:
-        del st.session_state.projects[project_id]
-
-    if not st.session_state.projects:
+    db_delete_project(project_id)
+    projects = db_list_projects()
+    if not projects:
         return None
-
-    return sorted(st.session_state.projects.keys())[0]
+    return sorted(projects.keys())[0]
 
 
 def save_current_project_snapshot():
     project_id = st.session_state.current_project_id
-    if project_id in st.session_state.projects:
-        st.session_state.projects[project_id]["state"] = _get_project_snapshot_from_state()
+    if project_id:
+        save_project_state(project_id, _get_project_snapshot_from_state())
 
 
 def switch_project(project_id: int):
-    if project_id not in st.session_state.projects:
+    projects = db_list_projects()
+    if project_id not in projects:
         return
     save_current_project_snapshot()
+    snapshot = load_project_state(project_id)
+    preserved = _preserve_ui_state()
+    _reset_session_state(preserved)
     st.session_state.current_project_id = project_id
-    _apply_project_snapshot(st.session_state.projects[project_id]["state"])
+    _apply_project_snapshot(_hydrate_project_state(snapshot))
     _clear_drafts()
     st.session_state.loaded_project_id = project_id
+    st.session_state._project_changed = True
 
 def initialize_state():
     """Inicializa as variáveis de sessão necessárias da aplicação usando Data-Driven config."""

@@ -2,6 +2,7 @@ import streamlit as st
 import copy
 import json
 
+from src.core.state import save_current_project_snapshot
 
 def _evaluation_signature(values: dict) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
@@ -15,6 +16,8 @@ def render_evaluations():
     
     alternatives = st.session_state.get("alternatives", {})
     criteria = st.session_state.get("criteria", {})
+    project_id = st.session_state.get("current_project_id", "default")
+    key_prefix = f"p{project_id}_"
     
     if not alternatives:
         st.warning("Nenhuma alternativa cadastrada. Retorne à aba de Alternativas.")
@@ -80,7 +83,7 @@ def render_evaluations():
                             label=f"{alternative_name} - {crit_name}",
                             options=select_options,
                             index=current_idx,
-                            key=f"aval_{alt_id}_{crit_id}",
+                            key=f"{key_prefix}aval_{alt_id}_{crit_id}",
                             label_visibility="collapsed"
                         )
                         if new_value == placeholder:
@@ -96,5 +99,6 @@ def render_evaluations():
         if st.button("💾 Salvar Avaliações", use_container_width=True):
             st.session_state.evaluations = copy.deepcopy(st.session_state.evaluation_draft)
             st.session_state.evaluation_draft_signature = _evaluation_signature(st.session_state.evaluations)
+            save_current_project_snapshot()
             st.success("Avaliações salvas com sucesso!")
             st.rerun()

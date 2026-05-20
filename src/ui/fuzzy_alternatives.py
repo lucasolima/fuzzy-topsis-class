@@ -3,6 +3,8 @@ import json
 
 import streamlit as st
 
+from src.core.state import save_current_project_snapshot
+
 
 def _draft_signature(values: dict) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
@@ -85,6 +87,7 @@ def render_fuzzy_config_table(
     prefix: str,
     title: str,
     fuzzy_terms: dict,
+    key_prefix: str = "",
 ):
     """Função genérica para renderizar a tabela de configurações fuzzy."""
     st.subheader(title)
@@ -108,7 +111,7 @@ def render_fuzzy_config_table(
             col_term, col_desc, col_l, col_m, col_u, col_del = st.columns([2, 3, 2, 2, 2, 1])
             
             # Usando uma string única por base (dict_name) para não conflitar chaves
-            k_base = f"{dict_name}_{key}"
+            k_base = f"{key_prefix}{dict_name}_{key}"
 
             with col_term:
                 new_key = st.text_input(
@@ -202,6 +205,8 @@ def render_fuzzy_alternatives():
 
     _init_fuzzy_alt_draft()
     _init_fuzzy_weight_draft()
+    project_id = st.session_state.get("current_project_id", "default")
+    key_prefix = f"p{project_id}_"
 
     # Renderiza Bloco 1: Alternativas
     render_fuzzy_config_table(
@@ -210,16 +215,17 @@ def render_fuzzy_alternatives():
         prefix="ALT", 
         title="Termos Linguísticos (Alternativas)",
         fuzzy_terms=st.session_state.fuzzy_number_alternatives_draft,
+        key_prefix=key_prefix,
     )
 
-    if st.button("➕ Adicionar", key="add_fuzzy_alt"):
+    if st.button("➕ Adicionar", key=f"{key_prefix}add_fuzzy_alt"):
         add_fuzzy_term(
             st.session_state.fuzzy_number_alternatives_draft,
             "next_fuzzy_alt_id_draft",
             prefix="ALT",
         )
         st.rerun()
-    if st.button("💾 Salvar Alterações", key="save_fuzzy_alt"):
+    if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_fuzzy_alt"):
         errors = _validate_fuzzy_terms(st.session_state.fuzzy_number_alternatives_draft, "Alternativas")
         if errors:
             st.error("Há campos em branco. Corrija antes de salvar.")
@@ -236,6 +242,7 @@ def render_fuzzy_alternatives():
                 "next_fuzzy_alt_id": st.session_state.next_fuzzy_alt_id,
             }
         )
+        save_current_project_snapshot()
         st.success("Alterações salvas com sucesso!")
         st.rerun()
 
@@ -248,16 +255,17 @@ def render_fuzzy_alternatives():
         prefix="PESO", 
         title="Termos Linguísticos (Pesos)",
         fuzzy_terms=st.session_state.fuzzy_number_weights_draft,
+        key_prefix=key_prefix,
     )
 
-    if st.button("➕ Adicionar", key="add_fuzzy_weight"):
+    if st.button("➕ Adicionar", key=f"{key_prefix}add_fuzzy_weight"):
         add_fuzzy_term(
             st.session_state.fuzzy_number_weights_draft,
             "next_fuzzy_weight_id_draft",
             prefix="PESO",
         )
         st.rerun()
-    if st.button("💾 Salvar Alterações", key="save_fuzzy_weight"):
+    if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_fuzzy_weight"):
         errors = _validate_fuzzy_terms(st.session_state.fuzzy_number_weights_draft, "Pesos")
         if errors:
             st.error("Há campos em branco. Corrija antes de salvar.")
@@ -274,5 +282,6 @@ def render_fuzzy_alternatives():
                 "next_fuzzy_weight_id": st.session_state.next_fuzzy_weight_id,
             }
         )
+        save_current_project_snapshot()
         st.success("Alterações salvas com sucesso!")
         st.rerun()

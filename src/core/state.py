@@ -51,7 +51,7 @@ PROJECT_STATE_KEYS = [
 ]
 
 
-def _build_default_project_state() -> dict:
+def _build_project_template_state() -> dict:
     alternatives = load_data("alternatives.json")
     fuzzy_number_alternatives = load_data("fuzzy_number_alternatives.json")
     fuzzy_number_weights = load_data("fuzzy_number_weights.json")
@@ -72,6 +72,13 @@ def _build_default_project_state() -> dict:
         "evaluations": {},
         "criteria_weights": {},
     }
+
+
+def _build_default_project_state() -> dict:
+    state = _build_project_template_state()
+    state["alternatives"] = {}
+    state["next_alt_id"] = 1
+    return state
 
 
 def _build_blank_project_state() -> dict:
@@ -201,7 +208,7 @@ def initialize_projects():
     projects = db_list_projects()
     if not projects:
         default_state = _build_default_project_state()
-        project_id = db_create_project("Projeto Padrão")
+        project_id = db_create_project("Novo Projeto")
         save_project_state(project_id, default_state)
         projects = db_list_projects()
 
@@ -225,7 +232,7 @@ def list_projects() -> dict:
 
 def create_project(name: str) -> int:
     project_id = db_create_project(name)
-    save_project_state(project_id, _build_blank_project_state())
+    save_project_state(project_id, _build_default_project_state())
     return project_id
 
 
@@ -237,7 +244,7 @@ def delete_project(project_id: int) -> int | None:
     db_delete_project(project_id)
     projects = db_list_projects()
     if not projects:
-        return None
+        return create_project("Novo Projeto")
     return sorted(projects.keys())[0]
 
 

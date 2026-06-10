@@ -5,7 +5,6 @@ from src.core.state import (
     initialize_state,
     list_projects,
     rename_project,
-    save_current_project_snapshot,
     switch_project,
 )
 from src.core.data_repository import system_data
@@ -20,10 +19,15 @@ st.set_page_config(
 )
 
 def main():
-    st.title("FTOPSIS Class - Customizações de SIGS")
+    initialize_state()
+
+    projects = list_projects()
+    current_project_id = st.session_state.current_project_id
+    project_title = projects.get(current_project_id, "Projeto Ativo")
+
+    st.title(project_title)
 
     # 2. Inicializa gerência de estado (regras e dados visuais)
-    initialize_state()
 
     def _show_projects_modal():
         @st.dialog("Projetos")
@@ -79,14 +83,11 @@ def main():
                     st.warning("Informe um nome para o projeto.")
 
             if st.button("Excluir Projeto", key="project_delete"):
-                if len(projects) <= 1:
-                    st.warning("Não é possível excluir o único projeto existente.")
-                else:
-                    next_project_id = delete_project(st.session_state.current_project_id)
-                    if next_project_id is not None:
-                        switch_project(next_project_id)
-                    st.session_state._modal_should_close = True
-                    st.rerun()
+                next_project_id = delete_project(st.session_state.current_project_id)
+                if next_project_id is not None:
+                    switch_project(next_project_id)
+                st.session_state._modal_should_close = True
+                st.rerun()
 
         _modal_body()
 
@@ -124,59 +125,6 @@ def main():
                 key="sidebar_menu_classif",
             )
         
-        st.markdown("---")
-        
-        st.header("Ferramentas")
-        if st.button("Preencher Dados Amostrais"):
-            initial_evaluations = {
-                "ALT1":  ["M", "MB", "A", "M", "M", "MB"],
-                "ALT2":  ["A", "M", "MB", "B", "B", "MB"],
-                "ALT3":  ["A", "MB", "M", "M", "B", "M"],
-                "ALT4":  ["MA", "MA", "MA", "M", "M", "B"],
-                "ALT5":  ["MA", "B", "A", "M", "M", "MB"],
-                "ALT6":  ["A", "M", "M", "B", "M", "B"],
-                "ALT7":  ["M", "B", "M", "M", "A", "A"],
-                "ALT8":  ["A", "B", "B", "M", "M", "M"],
-                "ALT9":  ["MA", "MB", "MA", "M", "M", "M"],
-                "ALT10": ["M", "MB", "A", "M", "B", "MB"],
-                "ALT11": ["M", "M", "M", "B", "M", "M"],
-                "ALT12": ["M", "MB", "A", "A", "MA", "MA"]
-            }
-            initial_weights = ["AI", "IM", "MAI", "BI", "IM", "MAI"]
-            
-            criteria = st.session_state.get("criteria", {})
-            cri_keys = list(criteria.keys())
-            
-            # Preencher evaluations
-            if "evaluations" not in st.session_state:
-                st.session_state.evaluations = {}
-                
-            for alt_id, values in initial_evaluations.items():
-                if alt_id not in st.session_state.evaluations:
-                    st.session_state.evaluations[alt_id] = {}
-                for i, val in enumerate(values):
-                    if i < len(cri_keys):
-                        crit_id = cri_keys[i]
-                        for d in criteria[crit_id].get("descriptions", []):
-                            if d.get("alternative_term") == val:
-                                st.session_state.evaluations[alt_id][crit_id] = d["description"]
-                                break
-                                
-            # Preencher pesos
-            if "criteria_weights" not in st.session_state:
-                st.session_state.criteria_weights = {}
-                
-            fuzzy_weights = st.session_state.get("fuzzy_number_weights", {})
-            for i, p in enumerate(initial_weights):
-                if i < len(cri_keys):
-                    crit_id = cri_keys[i]
-                    if p in fuzzy_weights:
-                        st.session_state.criteria_weights[crit_id] = fuzzy_weights[p]["description"]
-
-            save_current_project_snapshot()
-            st.success("Dados preenchidos com sucesso!")
-            st.rerun()
-
         st.markdown("---")
         st.header("Projetos")
         if st.button("Gerenciar Projetos"):

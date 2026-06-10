@@ -1,7 +1,3 @@
-"""
-Serviço responsável pela execução do algoritmo F-TOPSIS Class
-seguindo os princípios de Clean Code, SOLID e Extreme Programming (Testabilidade, SRP).
-"""
 import copy
 
 class FTopsisService:

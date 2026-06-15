@@ -29,65 +29,46 @@ def main():
 
     # 2. Inicializa gerência de estado (regras e dados visuais)
 
-    def _show_projects_modal():
-        @st.dialog("Projetos")
+    def _rename_project_modal():
+        @st.dialog("Gerenciar Projeto")
         def _modal_body():
             projects = list_projects()
-            project_ids = list(projects.keys())
-            current_project_id = st.session_state.current_project_id
-            if current_project_id not in project_ids:
-                current_project_id = project_ids[0]
-
-            def _on_project_select():
-                selected = st.session_state._project_selectbox
-                if selected != st.session_state.current_project_id:
-                    switch_project(selected)
-                    st.session_state._modal_should_close = True
-
-            st.selectbox(
-                "Projeto Atual:",
-                project_ids,
-                index=project_ids.index(current_project_id),
-                format_func=lambda pid: projects.get(pid, f"Projeto {pid}"),
-                key="_project_selectbox",
-                on_change=_on_project_select,
+            current_name = projects.get(st.session_state.current_project_id, "")
+            
+            new_name = st.text_input(
+                "Renomear projeto",
+                value=current_name,
+                key="rename_project_input_modal",
             )
+            
+            col_save = st.columns(1)[0]
+            with col_save:
+                if st.button("Salvar", key="save_project_rename", use_container_width=True):
+                    if new_name.strip():
+                        rename_project(st.session_state.current_project_id, new_name.strip())
+                        st.session_state._project_changed = True
+                        st.rerun()
+                    else:
+                        st.warning("Informe um nome para o projeto.")
 
-            if st.session_state.get("_modal_should_close"):
-                st.session_state._modal_should_close = False
-                st.rerun()
+        _modal_body()
 
+    def _create_project_modal():
+        @st.dialog("Criar Novo Projeto")
+        def _modal_body():
             new_project_name = st.text_input(
-                "Novo Projeto",
-                placeholder="Nome do projeto",
-                key="project_new_name",
+                "Nome do Projeto",
+                placeholder="Ex: Projeto de Expansão X",
+                key="project_new_name_sidebar",
             )
-            if st.button("Criar Projeto", key="project_create"):
+            if st.button("Criar Projeto", key="sidebar_project_create_btn", use_container_width=True):
                 if new_project_name.strip():
                     new_project_id = create_project(new_project_name.strip())
                     switch_project(new_project_id)
-                    st.session_state._modal_should_close = True
+                    st.session_state._project_changed = True
                     st.rerun()
                 else:
                     st.warning("Informe um nome para o projeto.")
-
-            rename_value = st.text_input(
-                "Renomear Projeto",
-                value=projects.get(st.session_state.current_project_id, ""),
-                key="rename_project_input",
-            )
-            if st.button("Renomear Projeto", key="project_rename"):
-                if rename_value.strip():
-                    rename_project(st.session_state.current_project_id, rename_value.strip())
-                else:
-                    st.warning("Informe um nome para o projeto.")
-
-            if st.button("Excluir Projeto", key="project_delete"):
-                next_project_id = delete_project(st.session_state.current_project_id)
-                if next_project_id is not None:
-                    switch_project(next_project_id)
-                st.session_state._modal_should_close = True
-                st.rerun()
 
         _modal_body()
 
@@ -98,6 +79,46 @@ def main():
 
     # Menu Lateral
     with st.sidebar:
+        
+        project_ids = list(projects.keys())
+        if current_project_id not in project_ids and project_ids:
+            current_project_id = project_ids[0]
+            
+        def _on_sidebar_project_select():
+            selected = st.session_state._sidebar_project_selectbox
+            if selected != st.session_state.current_project_id:
+                switch_project(selected)
+                
+        st.write("**Projeto Ativo:**")
+        col_list, col_add = st.columns([3, 1])
+        with col_list:
+            st.selectbox(
+                "Projeto Ativo:",
+                project_ids,
+                index=project_ids.index(current_project_id) if project_ids else 0,
+                format_func=lambda pid: projects.get(pid, f"Projeto {pid}"),
+                key="_sidebar_project_selectbox",
+                on_change=_on_sidebar_project_select,
+                label_visibility="collapsed"
+            )
+        with col_add:
+            if st.button("➕", key="sidebar_add_project", help="Criar Novo Projeto", use_container_width=True):
+                _create_project_modal()
+
+        col_edit, col_del = st.columns([1, 1])
+        with col_edit:
+            if st.button("✏️", key="sidebar_project_rename", help="Renomear Projeto Ativo", use_container_width=True):
+                _rename_project_modal()
+        with col_del:
+            if st.button("❌", key="sidebar_project_delete", help="Excluir Projeto Ativo", use_container_width=True):
+                next_project_id = delete_project(st.session_state.current_project_id)
+                if next_project_id is not None:
+                    switch_project(next_project_id)
+                st.rerun()
+
+        
+        st.markdown("---")
+
         st.header("Menu Principal")
         
         secao = st.selectbox(
@@ -126,9 +147,6 @@ def main():
             )
         
         st.markdown("---")
-        st.header("Projetos")
-        if st.button("Gerenciar Projetos"):
-            _show_projects_modal()
 
     # 2.1 Sincroniza estado da interface com a camada de regras de negócio estática
     system_data.update_from_state(st.session_state)

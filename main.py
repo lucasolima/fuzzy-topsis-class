@@ -179,7 +179,7 @@ def main():
     system_data.update_from_state(st.session_state)
 
     # 3. Renderização Condicional da Navegação
-    if selected_menu == "Alternativas":
+    if secao == "Cadastro das Demandas" and selected_menu == "Alternativas":
         render_alternatives()
 
     elif selected_menu == "Perfis de Prioridade":
@@ -193,7 +193,7 @@ def main():
         from src.ui.criteria_config import render_criteria
         render_criteria()
         
-    elif selected_menu == "Alternativas":
+    elif secao == "Avaliação das Alternativas" and selected_menu == "Alternativas":
         from src.ui.evaluations import render_evaluations
         render_evaluations()
         

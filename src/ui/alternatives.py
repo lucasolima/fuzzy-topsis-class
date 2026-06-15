@@ -35,15 +35,15 @@ def _validate_alternatives(draft: dict) -> list[str]:
     return errors
 
 def render_alternatives():
-    st.header("Parametrização das Alternativas")
+    st.header("Cadastro das Demandas")
 
     
     st.markdown(
-        "Informe ao sistema quais são as alternatives que iremos "
+        "Informe ao sistema quais são as demandas que iremos "
         "classificar com o algoritmo Fuzzy TOPSIS."
     )
 
-    st.subheader("Lista de Alternativas")
+    st.subheader("Lista das Demandas")
 
     _init_alternatives_draft()
     project_id = st.session_state.get("current_project_id", "default")

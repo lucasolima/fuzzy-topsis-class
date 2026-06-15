@@ -118,19 +118,46 @@ def main():
 
         
         st.markdown("---")
+        
+        st.write("**Selecione a Seção:**")
+        col_sec, col_param = st.columns([4, 1])
+        
+        with col_sec:
+            options = ["Cadastro das Demandas", "Avaliação das Alternativas", "Classificação Final"]
+            
+            if "selected_section" not in st.session_state:
+                st.session_state.selected_section = options[0]
+            
+            try:
+                current_idx = options.index(st.session_state.selected_section)
+            except ValueError:
+                current_idx = 0
+                
+            def _on_sec_change():
+                st.session_state.selected_section = st.session_state._sidebar_sec_selectbox
 
-        st.header("Menu Principal")
+            st.selectbox(
+                "Selecione a Seção:",
+                options,
+                index=current_idx,
+                key="_sidebar_sec_selectbox",
+                on_change=_on_sec_change,
+                label_visibility="collapsed"
+            )
+            
+        with col_param:
+            if st.button("⚙️", key="btn_param_modelo", help="Parametrização do Modelo", use_container_width=True):
+                st.session_state.selected_section = "Parametrização do Modelo"
+                st.rerun()
+
+        secao = st.session_state.selected_section
         
-        secao = st.selectbox(
-            "Selecione a Seção:",
-            ["Parametrização do Modelo", "Avaliação das Alternativas", "Classificação Final"],
-            key="sidebar_section",
-        )
-        
-        if secao == "Parametrização do Modelo":
+        if secao == "Cadastro das Demandas":
+            selected_menu = "Alternativas"
+        elif secao == "Parametrização do Modelo":
             selected_menu = st.radio(
                 "Opções de Parametrização:",
-                ["Alternativas e Classes", "Números Fuzzy", "Critérios"],
+                ["Perfis de Prioridade", "Números Fuzzy", "Critérios"],
                 key="sidebar_menu_param",
             )
         elif secao == "Avaliação das Alternativas":
@@ -152,8 +179,12 @@ def main():
     system_data.update_from_state(st.session_state)
 
     # 3. Renderização Condicional da Navegação
-    if selected_menu == "Alternativas e Classes":
+    if selected_menu == "Alternativas":
         render_alternatives()
+
+    elif selected_menu == "Perfis de Prioridade":
+        from src.ui.classes_config import render_classes
+        render_classes()
         
     elif selected_menu == "Números Fuzzy":
         render_fuzzy_alternatives()

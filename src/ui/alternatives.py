@@ -105,5 +105,3 @@ def render_alternatives():
         save_current_project_snapshot()
         st.success("Alterações salvas com sucesso!")
         st.rerun()
-
-    render_classes()

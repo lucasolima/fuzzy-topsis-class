@@ -41,7 +41,7 @@ def render_classes():
     st.header("Parametrização das Classes / Perfis de Prioridade")
     
     st.markdown(
-        "Nesta etapa, iremos cadastrar as classes ou perfis de prioridade que serão utilizados "
+        "Cadastre as classes ou perfis de prioridade que serão utilizados "
         "para classificar as alternativas." 
     )
 

@@ -199,7 +199,7 @@ def render_fuzzy_alternatives():
 
     
     st.markdown(
-        "Nesta aba, configuramos os termos linguísticos e seus respectivos "
+        "Cadastre e parametrize os termos linguísticos e seus respectivos "
         "números fuzzy triangulares (l, m, u) tanto para **Alternativas** quanto para **Pesos**."
     )
 

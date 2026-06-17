@@ -1,4 +1,5 @@
 import streamlit as st
+from src.core.auth import check_auth, logout
 from src.core.state import (
     create_project,
     delete_project,
@@ -20,6 +21,10 @@ st.set_page_config(
 
 def main():
     initialize_state()
+
+    # Verifica se o usuário está autenticado
+    if not check_auth():
+        st.stop()
 
     projects = list_projects()
     current_project_id = st.session_state.current_project_id
@@ -193,6 +198,8 @@ def main():
             )
         
         st.markdown("---")
+        if st.button("🚪 Sair", key="logout_btn", use_container_width=True):
+            logout()
 
     # 2.1 Sincroniza estado da interface com a camada de regras de negócio estática
     system_data.update_from_state(st.session_state)

@@ -8,10 +8,10 @@ def _evaluation_signature(values: dict) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
 
 def render_evaluations():
-    st.header("Avaliação das Alternativas")
+    st.header("Avaliação das Demandas")
     st.markdown(
-        "Preencha a matriz abaixo selecionando, para cada alternativa, a descrição correspondente "
-        "em cada critério. As alterações só são aplicadas ao clicar em **Salvar Avaliações**."
+        "Para cada demanda, selecione o nível de prioridade que melhor representa o critério sendo avaliado."
+        "As alterações só são aplicadas ao clicar em **Salvar Avaliações**."
     )
     
     alternatives = st.session_state.get("alternatives", {})
@@ -20,7 +20,7 @@ def render_evaluations():
     key_prefix = f"p{project_id}_"
     
     if not alternatives:
-        st.warning("Nenhuma alternativa cadastrada. Retorne à aba de Alternativas.")
+        st.warning("Nenhuma demanda cadastrada. Retorne à aba de Demandas.")
         return
         
     if not criteria:
@@ -49,7 +49,7 @@ def render_evaluations():
 
     header_cols = st.columns([3] + [2 for _ in crit_items])
     with header_cols[0]:
-        st.markdown("**Alternativa**")
+        st.markdown("**Demandas**")
     for col, (_, crit_data) in zip(header_cols[1:], crit_items):
         label = crit_data.get("criterion", "") or "Critério Sem Nome"
         with col:

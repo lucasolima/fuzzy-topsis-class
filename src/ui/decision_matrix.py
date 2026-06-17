@@ -4,8 +4,7 @@ from src.core.data_repository import system_data
 def render_decision_matrix():
     st.header("Matriz de Decisão")
     st.markdown(
-        "Esta tabela apresenta os **Termos Linguísticos (Alternativas)** atrelados às "
-        "avaliações (descrições) que foram selecionadas na aba anterior."
+        "Representação tabular da avaliação das demandas. Utilize para verificar se a avaliação foi realizada corretamente."
     )
     
     alternatives = system_data.get_alternatives()
@@ -56,8 +55,7 @@ def render_decision_matrix():
     st.markdown("---")
     st.header("Matriz dos Critérios")
     st.markdown(
-        "Esta tabela apresenta os **Termos Linguísticos (Pesos)** atrelados aos "
-        "níveis de importância que foram selecionados na aba de Pesos."
+        "Representação tabular da ponderação dos critérios. Utilize para verificar se a ponderação foi realizada corretamente."
     )
     
     saved_weights = system_data.get_criteria_weights()

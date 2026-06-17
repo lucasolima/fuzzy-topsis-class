@@ -39,8 +39,8 @@ def render_alternatives():
 
     
     st.markdown(
-        "Informe ao sistema quais são as demandas que iremos "
-        "classificar com o algoritmo Fuzzy TOPSIS."
+        "Cadastre as demandas que serão "
+        "classificadas com o Fuzzy TOPSIS Class. As alterações só são aplicadas ao clicar em **Salvar Alterações**."
     )
 
     st.subheader("Lista das Demandas")

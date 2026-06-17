@@ -5,8 +5,8 @@ from src.core.state import save_current_project_snapshot
 def render_criteria_weights():
     st.header("Peso dos Critérios")
     st.markdown(
-        "Nesta etapa, defina a importância de cada um dos critérios. "
-        "A lista abaixo contém todos os critérios que você cadastrou."
+        "Defina a importância de cada um dos critérios. "
+        "As alterações só são aplicadas ao clicar em **Salvar Pesos**."
     )
     
     criteria = st.session_state.get("criteria", {})

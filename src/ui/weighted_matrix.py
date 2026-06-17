@@ -39,10 +39,9 @@ def _render_html_table(headers, rows):
     st.markdown(table_html, unsafe_allow_html=True)
 
 def render_weighted_matrix():
-    st.header("Resultado da Classificação")
+    st.header("Classificação Final")
     st.markdown(
-        "A tabela abaixo determina a qual classe/perfil cada alternativa melhor se adequa, "
-        "com base no maior nível de proximidade (CCi). O **maior CCi indica a classe ideal**."
+        "Classificação das demandas por perfil de prioridade. **O maior CCi indica a classe recomendada para cada demanda.**"
     )
 
     alternatives = system_data.get_alternatives()
@@ -54,7 +53,7 @@ def render_weighted_matrix():
     classes = system_data.get_classes()
 
     if not alternatives or not criteria:
-        st.warning("É necessário cadastrar alternatives e critérios primeiro.")
+        st.warning("É necessário cadastrar demandas e critérios primeiro.")
         return
 
     if not evaluations:
@@ -112,10 +111,10 @@ def render_weighted_matrix():
                     greater_cci = cci_val
                     best_class = label_combinacao
 
-            row["⭐ Classe Recomendada"] = best_class
+            row["Classe Recomendada"] = best_class
             cci_rows.append(row)
 
-        headers = ["Alternativa"] + label_order + ["⭐ Classe Recomendada"]
+        headers = ["Alternativa"] + label_order + ["Classe Recomendada"]
         table_rows = []
         for row in cci_rows:
             max_cci = max((row[label] for label in label_order), default=0.0)
@@ -126,14 +125,14 @@ def render_weighted_matrix():
                 is_max = value == max_cci
                 style = "background-color: #2e7b32; color: white; font-weight: bold;" if is_max else ""
                 formatted_row.append({"value": f"{value:.3f}", "style": style})
-            formatted_row.append({"value": row["⭐ Classe Recomendada"]})
+            formatted_row.append({"value": row["Classe Recomendada"]})
             table_rows.append(formatted_row)
 
         _render_html_table(headers, table_rows)
 
         st.markdown("---")
-        st.header("Ranking")
-        st.markdown("Lista das alternatives avaliadas, ordenadas por sua pontuação (Maior CCi) e classe recomendada.")
+        st.header("Ranking Final")
+        st.markdown("Lista das demandas avaliadas, ordenadas por **maior CCi** e **classe recomendada**.")
 
         # Dicionário de peso para ordenação das classes
         # Ex: "Alta Prioridade" -> 0, "Média Prioridade" -> 1, "Baixa Prioridade" -> 2
@@ -142,7 +141,7 @@ def render_weighted_matrix():
         ranking_data = []
         for row in cci_rows:
             greater_cci = max((row[label] for label in label_order), default=0.0)
-            classe_rec = row["⭐ Classe Recomendada"]
+            classe_rec = row["Classe Recomendada"]
             ranking_data.append({
                 "Alternativa": row["Alternativa"],
                 "Pontuação": greater_cci,

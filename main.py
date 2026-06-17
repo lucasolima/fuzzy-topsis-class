@@ -72,6 +72,28 @@ def main():
 
         _modal_body()
 
+    def _param_options_modal():
+        @st.dialog("⚙️ Opções de Parametrização")
+        def _modal_body():
+            st.write("Selecione qual etapa da parametrização deseja configurar:")
+            
+            if st.button("👥 Perfis de Prioridade", key="modal_btn_perfis", use_container_width=True):
+                st.session_state.selected_section = "Parametrização do Modelo"
+                st.session_state.sidebar_menu_param = "Perfis de Prioridade"
+                st.rerun()
+                
+            if st.button("🔢 Números Fuzzy", key="modal_btn_fuzzy", use_container_width=True):
+                st.session_state.selected_section = "Parametrização do Modelo"
+                st.session_state.sidebar_menu_param = "Números Fuzzy"
+                st.rerun()
+                
+            if st.button("📋 Critérios", key="modal_btn_criterios", use_container_width=True):
+                st.session_state.selected_section = "Parametrização do Modelo"
+                st.session_state.sidebar_menu_param = "Critérios"
+                st.rerun()
+                
+        _modal_body()
+
     # Verifica se o projeto foi alterado após o modal fechar
     if st.session_state.get("_project_changed"):
         st.session_state._project_changed = False
@@ -147,19 +169,16 @@ def main():
             
         with col_param:
             if st.button("⚙️", key="btn_param_modelo", help="Parametrização do Modelo", use_container_width=True):
-                st.session_state.selected_section = "Parametrização do Modelo"
-                st.rerun()
+                _param_options_modal()
 
         secao = st.session_state.selected_section
         
         if secao == "Cadastro das Demandas":
             selected_menu = "Alternativas"
         elif secao == "Parametrização do Modelo":
-            selected_menu = st.radio(
-                "Opções de Parametrização:",
-                ["Perfis de Prioridade", "Números Fuzzy", "Critérios"],
-                key="sidebar_menu_param",
-            )
+            selected_menu = st.session_state.get("sidebar_menu_param", "Perfis de Prioridade")
+            st.session_state.sidebar_menu_param = selected_menu
+            st.markdown(f"🔧 **Parametrização:** {selected_menu}")
         elif secao == "Avaliação das Alternativas":
             selected_menu = st.radio(
                 "Opções de Avaliação:",

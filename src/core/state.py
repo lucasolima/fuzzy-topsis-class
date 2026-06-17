@@ -163,7 +163,9 @@ def _clear_widget_state():
 
 def _preserve_ui_state() -> dict:
     keys = (
-        "sidebar_section",
+        "selected_section",
+        "_sidebar_sec_selectbox",
+        "_sidebar_project_selectbox",
         "sidebar_menu_param",
         "sidebar_menu_eval",
         "sidebar_menu_classif",

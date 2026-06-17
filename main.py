@@ -107,9 +107,10 @@ def main():
             current_project_id = project_ids[0]
             
         def _on_sidebar_project_select():
-            selected = st.session_state._sidebar_project_selectbox
-            if selected != st.session_state.current_project_id:
-                switch_project(selected)
+            if "_sidebar_project_selectbox" in st.session_state:
+                selected = st.session_state._sidebar_project_selectbox
+                if selected != st.session_state.current_project_id:
+                    switch_project(selected)
                 
         st.write("**Projeto Ativo:**")
         col_list, col_add = st.columns([3, 1])
@@ -156,7 +157,8 @@ def main():
                 current_idx = 0
                 
             def _on_sec_change():
-                st.session_state.selected_section = st.session_state._sidebar_sec_selectbox
+                if "_sidebar_sec_selectbox" in st.session_state:
+                    st.session_state.selected_section = st.session_state._sidebar_sec_selectbox
 
             st.selectbox(
                 "Selecione a Seção:",

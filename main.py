@@ -142,7 +142,7 @@ def main():
         
         st.markdown("---")
         
-        st.write("**Selecione a Seção:**")
+        st.write("**Selecione a Fase:**")
         col_sec, col_param = st.columns([4, 1])
         
         with col_sec:

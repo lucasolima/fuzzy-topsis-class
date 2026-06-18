@@ -166,8 +166,6 @@ def _preserve_ui_state() -> dict:
         "authenticated",
         "auth_error",
         "selected_section",
-        "_sidebar_sec_selectbox",
-        "_sidebar_project_selectbox",
         "sidebar_menu_param",
         "sidebar_menu_eval",
         "sidebar_menu_classif",
@@ -176,8 +174,10 @@ def _preserve_ui_state() -> dict:
 
 
 def _reset_session_state(preserved: dict) -> None:
+    # Ignora chaves internas de widgets que estão ativos na tela para evitar StreamlitAPIException
+    ignored_widget_keys = {"_sidebar_project_selectbox", "_sidebar_sec_selectbox"}
     for key in list(st.session_state.keys()):
-        if key not in preserved:
+        if key not in preserved and key not in ignored_widget_keys:
             del st.session_state[key]
     st.session_state.update(preserved)
 

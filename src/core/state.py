@@ -163,6 +163,8 @@ def _clear_widget_state():
 
 def _preserve_ui_state() -> dict:
     keys = (
+        "authenticated",
+        "auth_error",
         "selected_section",
         "_sidebar_sec_selectbox",
         "_sidebar_project_selectbox",

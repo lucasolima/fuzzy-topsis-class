@@ -4,10 +4,29 @@ import json
 
 from src.core.state import save_current_project_snapshot
 
+
+# Helper function to display and clear messages from session state
+def _display_and_clear_messages():
+    if "messages" in st.session_state and st.session_state.messages:
+        for msg_type, msg_text in st.session_state.messages:
+            if msg_type == "success":
+                st.success(msg_text)
+            elif msg_type == "error":
+                st.error(msg_text)
+            elif msg_type == "warning":
+                st.warning(msg_text)
+            elif msg_type == "info":
+                st.info(msg_text)
+        st.session_state.messages = [] # Clear messages after displaying
+
+
 def _evaluation_signature(values: dict) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
 
 def render_evaluations():
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    _display_and_clear_messages()
     st.header("Avaliação das Demandas")
     st.markdown(
         "Para cada demanda, selecione o nível de prioridade que melhor representa o critério sendo avaliado."
@@ -20,11 +39,11 @@ def render_evaluations():
     key_prefix = f"p{project_id}_"
     
     if not alternatives:
-        st.warning("Nenhuma demanda cadastrada. Retorne à aba de Demandas.")
+        st.session_state.messages.append(("warning", "Nenhuma demanda cadastrada. Retorne à aba de Demandas."))
         return
         
     if not criteria:
-        st.warning("Nenhum critério cadastrado. Retorne à aba de Critérios.")
+        st.session_state.messages.append(("warning", "Nenhum critério cadastrado. Retorne à aba de Critérios."))
         return
 
     # Garante a inicialização segura do bloco de avaliações no session_state
@@ -44,7 +63,7 @@ def render_evaluations():
     alt_items = list(alternatives.items())
 
     if not any(crit_data.get("descriptions", []) for _, crit_data in crit_items):
-        st.warning("Nenhum critério possui descrições cadastradas para avaliação.")
+        st.session_state.messages.append(("warning", "Nenhum critério possui descrições cadastradas para avaliação."))
         return
 
     header_cols = st.columns([3] + [2 for _ in crit_items])
@@ -100,5 +119,5 @@ def render_evaluations():
             st.session_state.evaluations = copy.deepcopy(st.session_state.evaluation_draft)
             st.session_state.evaluation_draft_signature = _evaluation_signature(st.session_state.evaluations)
             save_current_project_snapshot()
-            st.success("Avaliações salvas com sucesso!")
+            st.session_state.messages.append(("success", "Avaliações salvas com sucesso!"))
             st.rerun()

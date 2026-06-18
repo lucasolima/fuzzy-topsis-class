@@ -1,7 +1,26 @@
 import streamlit as st
 from src.core.data_repository import system_data
 
+
+# Helper function to display and clear messages from session state
+def _display_and_clear_messages():
+    if "messages" in st.session_state and st.session_state.messages:
+        for msg_type, msg_text in st.session_state.messages:
+            if msg_type == "success":
+                st.success(msg_text)
+            elif msg_type == "error":
+                st.error(msg_text)
+            elif msg_type == "warning":
+                st.warning(msg_text)
+            elif msg_type == "info":
+                st.info(msg_text)
+        st.session_state.messages = [] # Clear messages after displaying
+
+
 def render_decision_matrix():
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    _display_and_clear_messages()
     st.header("Matriz de Decisão")
     st.markdown(
         "Representação tabular da avaliação das demandas. Utilize para verificar se a avaliação foi realizada corretamente."
@@ -11,12 +30,13 @@ def render_decision_matrix():
     criteria = system_data.get_criteria()
     evaluations = system_data.get_evaluations()
     
+    
     if not alternatives or not criteria:
-        st.warning("É necessário cadastrar alternatives e critérios primeiro.")
+        st.session_state.messages.append(("warning", "É necessário cadastrar alternatives e critérios primeiro."))
         return
         
     if not evaluations:
-        st.info("Nenhuma avaliação foi preenchida ainda. Vá para a aba de Avaliações.")
+        st.session_state.messages.append(("info", "Nenhuma avaliação foi preenchida ainda. Vá para a aba de Avaliações."))
     else:
         # Onde iremos armazenar os dados para plotar no Pandas e Streamlit
         matrix_data = []
@@ -62,7 +82,7 @@ def render_decision_matrix():
     fuzzy_weights = system_data.get_fuzzy_number_weights()
     
     if not saved_weights:
-        st.info("Nenhum peso foi definido ainda. Vá para a aba de Pesos.")
+        st.session_state.messages.append(("info", "Nenhum peso foi definido ainda. Vá para a aba de Pesos."))
         return
         
     row_pesos = {}

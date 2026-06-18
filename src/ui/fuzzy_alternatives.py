@@ -6,6 +6,21 @@ import streamlit as st
 from src.core.state import save_current_project_snapshot
 
 
+# Helper function to display and clear messages from session state
+def _display_and_clear_messages():
+    if "messages" in st.session_state and st.session_state.messages:
+        for msg_type, msg_text in st.session_state.messages:
+            if msg_type == "success":
+                st.success(msg_text)
+            elif msg_type == "error":
+                st.error(msg_text)
+            elif msg_type == "warning":
+                st.warning(msg_text)
+            elif msg_type == "info":
+                st.info(msg_text)
+        st.session_state.messages = [] # Clear messages after displaying
+
+
 def _draft_signature(values: dict) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
 
@@ -87,6 +102,7 @@ def render_fuzzy_config_table(
     prefix: str,
     title: str,
     fuzzy_terms: dict,
+    messages: list, # Add messages parameter
     key_prefix: str = "",
 ):
     """Função genérica para renderizar a tabela de configurações fuzzy."""
@@ -95,7 +111,7 @@ def render_fuzzy_config_table(
     fuzzy_keys = list(fuzzy_terms.keys())
     
     if not fuzzy_keys:
-        st.info(f"Nenhum termo cadastrado em {title}. Clique no botão abaixo para adicionar.")
+        messages.append(("info", f"Nenhum termo cadastrado em {title}. Clique no botão abaixo para adicionar."))
     else:
         # Cabeçalhos da tabela
         col_term, col_desc, col_l, col_m, col_u, col_del = st.columns([2, 3, 2, 2, 2, 1])
@@ -195,6 +211,9 @@ def render_fuzzy_config_table(
                     st.rerun()
 
 def render_fuzzy_alternatives():
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    _display_and_clear_messages()
     st.header("Parametrização dos Números Fuzzy e Termos Linguísticos")
 
     
@@ -210,11 +229,12 @@ def render_fuzzy_alternatives():
 
     # Renderiza Bloco 1: Alternativas
     render_fuzzy_config_table(
-        dict_name="fuzzy_number_alternatives", 
-        next_id_key="next_fuzzy_alt_id_draft", 
-        prefix="ALT", 
+        dict_name="fuzzy_number_alternatives",
+        next_id_key="next_fuzzy_alt_id_draft",
+        prefix="ALT",
         title="Termos Linguísticos (Alternativas)",
         fuzzy_terms=st.session_state.fuzzy_number_alternatives_draft,
+        messages=st.session_state.messages,
         key_prefix=key_prefix,
     )
 
@@ -228,9 +248,10 @@ def render_fuzzy_alternatives():
     if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_fuzzy_alt"):
         errors = _validate_fuzzy_terms(st.session_state.fuzzy_number_alternatives_draft, "Alternativas")
         if errors:
-            st.error("Há campos em branco. Corrija antes de salvar.")
+            st.session_state.messages.append(("error", "Há campos em branco. Corrija antes de salvar."))
             for msg in errors:
-                st.caption(msg)
+                st.session_state.messages.append(("error", msg))
+            st.rerun()
             return
         st.session_state.fuzzy_number_alternatives = copy.deepcopy(
             st.session_state.fuzzy_number_alternatives_draft
@@ -243,18 +264,19 @@ def render_fuzzy_alternatives():
             }
         )
         save_current_project_snapshot()
-        st.success("Alterações salvas com sucesso!")
+        st.session_state.messages.append(("success", "Alterações salvas com sucesso!"))
         st.rerun()
 
     st.markdown("<br><br>", unsafe_allow_html=True) # Espaçamento
     
     # Renderiza Bloco 2: Pesos
     render_fuzzy_config_table(
-        dict_name="fuzzy_number_weights", 
-        next_id_key="next_fuzzy_weight_id_draft", 
-        prefix="PESO", 
+        dict_name="fuzzy_number_weights",
+        next_id_key="next_fuzzy_weight_id_draft",
+        prefix="PESO",
         title="Termos Linguísticos (Pesos)",
         fuzzy_terms=st.session_state.fuzzy_number_weights_draft,
+        messages=st.session_state.messages,
         key_prefix=key_prefix,
     )
 
@@ -268,9 +290,10 @@ def render_fuzzy_alternatives():
     if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_fuzzy_weight"):
         errors = _validate_fuzzy_terms(st.session_state.fuzzy_number_weights_draft, "Pesos")
         if errors:
-            st.error("Há campos em branco. Corrija antes de salvar.")
+            st.session_state.messages.append(("error", "Há campos em branco. Corrija antes de salvar."))
             for msg in errors:
-                st.caption(msg)
+                st.session_state.messages.append(("error", msg))
+            st.rerun()
             return
         st.session_state.fuzzy_number_weights = copy.deepcopy(
             st.session_state.fuzzy_number_weights_draft
@@ -283,5 +306,5 @@ def render_fuzzy_alternatives():
             }
         )
         save_current_project_snapshot()
-        st.success("Alterações salvas com sucesso!")
+        st.session_state.messages.append(("success", "Alterações salvas com sucesso!"))
         st.rerun()

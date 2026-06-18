@@ -99,6 +99,25 @@ def main():
                 
         _modal_body()
 
+    def _delete_project_modal():
+        @st.dialog("Confirmar Exclusão")
+        def _modal_body():
+            st.warning("Tem certeza que deseja excluir o projeto ativo? Esta ação não pode ser desfeita.")
+            
+            col_yes, col_no = st.columns([1, 1])
+            with col_yes:
+                if st.button("Sim, Excluir", key="confirm_delete_project", use_container_width=True):
+                    next_project_id = delete_project(st.session_state.current_project_id)
+                    if next_project_id is not None:
+                        switch_project(next_project_id)
+                    st.rerun()
+            with col_no:
+                if st.button("Cancelar", key="cancel_delete_project", use_container_width=True):
+                    st.session_state._project_changed = False # Avoid rerunning if cancelled
+                    st.rerun() # Close dialog by rerunning
+
+        _modal_body()
+
     # Verifica se o projeto foi alterado após o modal fechar
     if st.session_state.get("_project_changed"):
         st.session_state._project_changed = False
@@ -139,10 +158,7 @@ def main():
                 _rename_project_modal()
         with col_del:
             if st.button("❌", key="sidebar_project_delete", help="Excluir Projeto Ativo", use_container_width=True):
-                next_project_id = delete_project(st.session_state.current_project_id)
-                if next_project_id is not None:
-                    switch_project(next_project_id)
-                st.rerun()
+                _delete_project_modal()
 
         
         st.markdown("---")

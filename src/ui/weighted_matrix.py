@@ -4,6 +4,21 @@ from src.core.data_repository import system_data
 from src.services.ftopsis_service import FTopsisService
 
 
+# Helper function to display and clear messages from session state
+def _display_and_clear_messages():
+    if "messages" in st.session_state and st.session_state.messages:
+        for msg_type, msg_text in st.session_state.messages:
+            if msg_type == "success":
+                st.success(msg_text)
+            elif msg_type == "error":
+                st.error(msg_text)
+            elif msg_type == "warning":
+                st.warning(msg_text)
+            elif msg_type == "info":
+                st.info(msg_text)
+        st.session_state.messages = [] # Clear messages after displaying
+
+
 def _render_html_table(headers, rows):
     header_html = "".join(f"<th>{html.escape(str(header))}</th>" for header in headers)
     body_html = ""
@@ -39,6 +54,9 @@ def _render_html_table(headers, rows):
     st.markdown(table_html, unsafe_allow_html=True)
 
 def render_weighted_matrix():
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    _display_and_clear_messages()
     st.header("Classificação Final")
     st.markdown(
         "Classificação das demandas por perfil de prioridade. **O maior CCi indica a classe recomendada para cada demanda.**"
@@ -53,15 +71,15 @@ def render_weighted_matrix():
     classes = system_data.get_classes()
 
     if not alternatives or not criteria:
-        st.warning("É necessário cadastrar demandas e critérios primeiro.")
+        st.session_state.messages.append(("warning", "É necessário cadastrar demandas e critérios primeiro."))
         return
 
     if not evaluations:
-        st.info("Nenhuma avaliação foi preenchida ainda. Vá para a aba de Avaliações.")
+        st.session_state.messages.append(("info", "Nenhuma avaliação foi preenchida ainda. Vá para a aba de Avaliações."))
         return
         
     if not criteria_weights:
-        st.info("Nenhum peso definido ainda. Vá para a aba de Pesos.")
+        st.session_state.messages.append(("info", "Nenhum peso definido ainda. Vá para a aba de Pesos."))
         return
 
     # Injeta a dependência no serviço

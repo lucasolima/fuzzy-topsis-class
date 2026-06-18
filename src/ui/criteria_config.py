@@ -6,6 +6,21 @@ import streamlit as st
 from src.core.state import save_current_project_snapshot
 
 
+# Helper function to display and clear messages from session state
+def _display_and_clear_messages():
+    if "messages" in st.session_state and st.session_state.messages:
+        for msg_type, msg_text in st.session_state.messages:
+            if msg_type == "success":
+                st.success(msg_text)
+            elif msg_type == "error":
+                st.error(msg_text)
+            elif msg_type == "warning":
+                st.warning(msg_text)
+            elif msg_type == "info":
+                st.info(msg_text)
+        st.session_state.messages = [] # Clear messages after displaying
+
+
 def _draft_signature(values: dict) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
 
@@ -128,6 +143,9 @@ def _validate_criteria(criteria: dict) -> list[str]:
     return errors
 
 def render_criteria():
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    _display_and_clear_messages()
     st.header("Parametrização dos Critérios")
     st.markdown("Cadastre os critérios (Benefício ou Custo), as descrições de valoração e os termos linguísticos mínimos aceitos por classe em relação a este critério.")
     
@@ -150,7 +168,7 @@ def render_criteria():
     
     
     if not criteria:
-        st.info("Nenhum critério cadastrado. Clique no botão abaixo para adicionar.")
+        st.session_state.messages.append(("info", "Nenhum critério cadastrado. Clique no botão abaixo para adicionar."))
     else:
         for crit_id, crit_data in criteria.items():
             name_to_show = crit_data["criterion"] if crit_data["criterion"].strip() else "Novo Critério"
@@ -259,7 +277,7 @@ def render_criteria():
                 # Bloco de Classes
                 st.markdown("#### Classes (Limiares do Critério)")
                 if not crit_data["classes"]:
-                    st.info("Não há classes cadastradas na primeira aba.")
+                    st.session_state.messages.append(("info", "Não há classes cadastradas na primeira aba."))
                 else:
                     ch1, ch2, _ = st.columns([5, 3, 2])
                     with ch1: st.write("**Classe**")
@@ -299,9 +317,10 @@ def render_criteria():
     if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_criteria"):
         errors = _validate_criteria(criteria)
         if errors:
-            st.error("Há campos em branco. Corrija antes de salvar.")
+            st.session_state.messages.append(("error", "Há campos em branco. Corrija antes de salvar."))
             for msg in errors:
-                st.caption(msg)
+                st.session_state.messages.append(("error", msg))
+            st.rerun()
             return
         st.session_state.criteria = copy.deepcopy(criteria)
         st.session_state.next_cri_id = st.session_state.next_cri_id_draft
@@ -313,5 +332,5 @@ def render_criteria():
             }
         )
         save_current_project_snapshot()
-        st.success("Alterações salvas com sucesso!")
+        st.session_state.messages.append(("success", "Alterações salvas com sucesso!"))
         st.rerun()

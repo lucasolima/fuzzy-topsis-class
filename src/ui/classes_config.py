@@ -6,6 +6,21 @@ import streamlit as st
 from src.core.state import save_current_project_snapshot
 
 
+# Helper function to display and clear messages from session state
+def _display_and_clear_messages():
+    if "messages" in st.session_state and st.session_state.messages:
+        for msg_type, msg_text in st.session_state.messages:
+            if msg_type == "success":
+                st.success(msg_text)
+            elif msg_type == "error":
+                st.error(msg_text)
+            elif msg_type == "warning":
+                st.warning(msg_text)
+            elif msg_type == "info":
+                st.info(msg_text)
+        st.session_state.messages = [] # Clear messages after displaying
+
+
 def _draft_signature(values: dict) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
 
@@ -37,6 +52,9 @@ def _validate_classes(draft: dict) -> list[str]:
 
 
 def render_classes():
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    _display_and_clear_messages()
     st.markdown("---")
     st.header("Parametrização das Classes / Perfis de Prioridade")
     
@@ -52,7 +70,7 @@ def render_classes():
     #available_terms = list(st.session_state.fuzzy_number_alternatives.keys())
     
     if not class_keys:
-        st.info("Nenhuma classe cadastrada. Clique no botão abaixo para adicionar.")
+        st.session_state.messages.append(("info", "Nenhuma classe cadastrada. Clique no botão abaixo para adicionar."))
     else:
         # Colunas sem o termo avaliado
         col_desc, col_del = st.columns([9, 1])
@@ -93,9 +111,10 @@ def render_classes():
     if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_classes"):
         errors = _validate_classes(st.session_state.classes_draft)
         if errors:
-            st.error("Há campos em branco. Corrija antes de salvar.")
+            st.session_state.messages.append(("error", "Há campos em branco. Corrija antes de salvar."))
             for msg in errors:
-                st.caption(msg)
+                st.session_state.messages.append(("error", msg))
+            st.rerun()
             return
         st.session_state.classes = copy.deepcopy(st.session_state.classes_draft)
         st.session_state.next_class_id = st.session_state.next_class_id_draft
@@ -106,5 +125,5 @@ def render_classes():
             }
         )
         save_current_project_snapshot()
-        st.success("Alterações salvas com sucesso!")
+        st.session_state.messages.append(("success", "Alterações salvas com sucesso!"))
         st.rerun()

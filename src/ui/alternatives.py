@@ -7,6 +7,21 @@ from src.core.state import save_current_project_snapshot
 from src.ui.classes_config import render_classes
 
 
+# Helper function to display and clear messages from session state
+def _display_and_clear_messages():
+    if "messages" in st.session_state and st.session_state.messages:
+        for msg_type, msg_text in st.session_state.messages:
+            if msg_type == "success":
+                st.success(msg_text)
+            elif msg_type == "error":
+                st.error(msg_text)
+            elif msg_type == "warning":
+                st.warning(msg_text)
+            elif msg_type == "info":
+                st.info(msg_text)
+        st.session_state.messages = [] # Clear messages after displaying
+
+
 def _draft_signature(values: dict) -> str:
     return json.dumps(values, sort_keys=True, ensure_ascii=False)
 
@@ -35,6 +50,9 @@ def _validate_alternatives(draft: dict) -> list[str]:
     return errors
 
 def render_alternatives():
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    _display_and_clear_messages()
     st.header("Cadastro das Demandas")
 
     
@@ -51,7 +69,7 @@ def render_alternatives():
     current_alternatives = list(st.session_state.alternatives_draft.items())
     
     if not current_alternatives:
-        st.info("Nenhuma alternativa cadastrada. Clique no botão abaixo para adicionar.")
+        st.session_state.messages.append(("info", "Nenhuma alternativa cadastrada. Clique no botão abaixo para adicionar."))
     else:
         for alt_id, alt_value in current_alternatives:
             col_input, col_del = st.columns([10, 1])
@@ -90,9 +108,10 @@ def render_alternatives():
     if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_alternatives"):
         errors = _validate_alternatives(st.session_state.alternatives_draft)
         if errors:
-            st.error("Há campos em branco. Corrija antes de salvar.")
+            st.session_state.messages.append(("error", "Há campos em branco. Corrija antes de salvar."))
             for msg in errors:
-                st.caption(msg)
+                st.session_state.messages.append(("error", msg))
+            st.rerun()
             return
         st.session_state.alternatives = copy.deepcopy(st.session_state.alternatives_draft)
         st.session_state.next_alt_id = st.session_state.next_alt_id_draft
@@ -103,5 +122,5 @@ def render_alternatives():
             }
         )
         save_current_project_snapshot()
-        st.success("Alterações salvas com sucesso!")
+        st.session_state.messages.append(("success", "Alterações salvas com sucesso!"))
         st.rerun()

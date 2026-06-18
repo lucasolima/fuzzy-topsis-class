@@ -2,7 +2,26 @@ import streamlit as st
 
 from src.core.state import save_current_project_snapshot
 
+
+# Helper function to display and clear messages from session state
+def _display_and_clear_messages():
+    if "messages" in st.session_state and st.session_state.messages:
+        for msg_type, msg_text in st.session_state.messages:
+            if msg_type == "success":
+                st.success(msg_text)
+            elif msg_type == "error":
+                st.error(msg_text)
+            elif msg_type == "warning":
+                st.warning(msg_text)
+            elif msg_type == "info":
+                st.info(msg_text)
+        st.session_state.messages = [] # Clear messages after displaying
+
+
 def render_criteria_weights():
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    _display_and_clear_messages()
     st.header("Peso dos Critérios")
     st.markdown(
         "Defina a importância de cada um dos critérios. "
@@ -15,11 +34,11 @@ def render_criteria_weights():
     key_prefix = f"p{project_id}_"
     
     if not criteria:
-        st.warning("Nenhum critério cadastrado. Retorne à aba de Critérios.")
+        st.session_state.messages.append(("warning", "Nenhum critério cadastrado. Retorne à aba de Critérios."))
         return
         
     if not fuzzy_weights:
-        st.warning("Não há termos linguísticos para pesos cadastrados. Retorne à aba de Números Fuzzy.")
+        st.session_state.messages.append(("warning", "Não há termos linguísticos para pesos cadastrados. Retorne à aba de Números Fuzzy."))
         return
 
     # Garante a inicialização segura de pesos no session_state
@@ -97,4 +116,5 @@ def render_criteria_weights():
                 if val is not None:
                     st.session_state.criteria_weights[cid] = val
             save_current_project_snapshot()
+            st.session_state.messages.append(("success", "Pesos salvos com sucesso!"))
             st.rerun()

@@ -32,6 +32,7 @@ def logout():
         st.session_state.auth_error = False
     st.rerun()
 
+@st.cache_data
 def get_base64_image(image_path):
     """Lê um arquivo de imagem local e retorna sua representação em Base64 para uso no CSS."""
     try:

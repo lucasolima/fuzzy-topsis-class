@@ -17,6 +17,9 @@ class CoreData:
         Sincroniza os dados do st.session_state para este objeto de negócio central.
         Isso permite isolamento da camada de interface (Streamlit).
         """
+        if not state_dict.get("_data_dirty", True) and hasattr(self, "_initialized"):
+            return
+
         if "alternatives" in state_dict:
             self.alternatives = state_dict["alternatives"].copy()
         
@@ -50,6 +53,9 @@ class CoreData:
         if "criteria_weights" in state_dict:
             import copy
             self.criteria_weights = copy.deepcopy(state_dict["criteria_weights"])
+
+        self._initialized = True
+        state_dict["_data_dirty"] = False
 
     def get_alternatives(self) -> dict:
         return self.alternatives

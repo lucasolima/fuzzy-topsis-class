@@ -194,6 +194,7 @@ def _apply_project_snapshot(snapshot: dict):
     for key in PROJECT_STATE_KEYS:
         if key in snapshot:
             st.session_state[key] = copy.deepcopy(snapshot[key])
+    st.session_state._data_dirty = True
 
 
 def _hydrate_project_state(state: dict) -> dict:
@@ -207,14 +208,23 @@ def _hydrate_project_state(state: dict) -> dict:
     }
 
 
-def initialize_projects():
+@st.cache_resource
+def cached_ensure_schema():
     ensure_schema()
-    projects = db_list_projects()
+
+
+def initialize_projects():
+    cached_ensure_schema()
+    if "projects_dict" not in st.session_state:
+        st.session_state.projects_dict = db_list_projects()
+        st.session_state._data_dirty = True
+    projects = st.session_state.projects_dict
     if not projects:
         default_state = _build_default_project_state()
         project_id = db_create_project("Novo Projeto")
         save_project_state(project_id, default_state)
-        projects = db_list_projects()
+        st.session_state.projects_dict = db_list_projects()
+        projects = st.session_state.projects_dict
 
     if "current_project_id" not in st.session_state:
         st.session_state.current_project_id = sorted(projects.keys())[0]
@@ -231,7 +241,9 @@ def initialize_projects():
 
 
 def list_projects() -> dict:
-    return db_list_projects()
+    if "projects_dict" not in st.session_state:
+        st.session_state.projects_dict = db_list_projects()
+    return st.session_state.projects_dict
 
 
 def validate_project_name(name: str) -> str | None:
@@ -251,6 +263,7 @@ def create_project(name: str) -> int:
         raise ValueError(name_error)
     project_id = db_create_project(name.strip())
     save_project_state(project_id, _build_default_project_state())
+    st.session_state.projects_dict = db_list_projects()
     return project_id
 
 
@@ -259,11 +272,13 @@ def rename_project(project_id: int, name: str):
     if name_error:
         raise ValueError(name_error)
     db_rename_project(project_id, name.strip())
+    st.session_state.projects_dict = db_list_projects()
 
 
 def delete_project(project_id: int) -> int | None:
     db_delete_project(project_id)
-    projects = db_list_projects()
+    st.session_state.projects_dict = db_list_projects()
+    projects = st.session_state.projects_dict
     if not projects:
         return create_project("Novo Projeto")
     return sorted(projects.keys())[0]
@@ -273,10 +288,11 @@ def save_current_project_snapshot():
     project_id = st.session_state.current_project_id
     if project_id:
         save_project_state(project_id, _get_project_snapshot_from_state())
+        st.session_state._data_dirty = True
 
 
 def switch_project(project_id: int):
-    projects = db_list_projects()
+    projects = list_projects()
     if project_id not in projects:
         return
     save_current_project_snapshot()

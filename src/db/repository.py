@@ -2,7 +2,7 @@ from __future__ import annotations
 
 from typing import Any
 
-from sqlalchemy import delete, select
+from sqlalchemy import delete, insert, select
 
 from src.db.models import (
     Alternative,
@@ -248,135 +248,184 @@ def _normalize_kind(value: str | None) -> str:
 def _insert_project_state(session, project_id: int, state: dict[str, Any]) -> None:
     fuzzy_alts = state.get("fuzzy_number_alternatives", {})
     fuzzy_weights = state.get("fuzzy_number_weights", {})
-    alt_term_by_code: dict[str, FuzzyTerm] = {}
-    weight_term_by_code: dict[str, FuzzyTerm] = {}
+    fuzzy_rows = []
 
     for code, data in fuzzy_alts.items():
-        term = FuzzyTerm(
-            project_id=project_id,
-            code=code,
-            description=data.get("description", ""),
-            l=data.get("lmu", [0.0, 0.0, 0.0])[0],
-            m=data.get("lmu", [0.0, 0.0, 0.0])[1],
-            u=data.get("lmu", [0.0, 0.0, 0.0])[2],
-            term_type="alternative",
+        lmu = data.get("lmu", [0.0, 0.0, 0.0])
+        fuzzy_rows.append(
+            {
+                "project_id": project_id,
+                "code": code,
+                "description": data.get("description", ""),
+                "l": lmu[0],
+                "m": lmu[1],
+                "u": lmu[2],
+                "term_type": "alternative",
+            }
         )
-        session.add(term)
-        alt_term_by_code[code] = term
 
     for code, data in fuzzy_weights.items():
-        term = FuzzyTerm(
-            project_id=project_id,
-            code=code,
-            description=data.get("description", ""),
-            l=data.get("lmu", [0.0, 0.0, 0.0])[0],
-            m=data.get("lmu", [0.0, 0.0, 0.0])[1],
-            u=data.get("lmu", [0.0, 0.0, 0.0])[2],
-            term_type="weight",
+        lmu = data.get("lmu", [0.0, 0.0, 0.0])
+        fuzzy_rows.append(
+            {
+                "project_id": project_id,
+                "code": code,
+                "description": data.get("description", ""),
+                "l": lmu[0],
+                "m": lmu[1],
+                "u": lmu[2],
+                "term_type": "weight",
+            }
         )
-        session.add(term)
-        weight_term_by_code[code] = term
+
+    alt_term_by_code: dict[str, int] = {}
+    weight_term_by_code: dict[str, int] = {}
+    weight_term_by_description: dict[str, int] = {}
+    if fuzzy_rows:
+        term_result = session.execute(
+            insert(FuzzyTerm).returning(
+                FuzzyTerm.id,
+                FuzzyTerm.code,
+                FuzzyTerm.description,
+                FuzzyTerm.term_type,
+            ),
+            fuzzy_rows,
+        )
+        for term_id, code, description, term_type in term_result:
+            if term_type == "alternative":
+                alt_term_by_code[code] = term_id
+            else:
+                weight_term_by_code[code] = term_id
+                weight_term_by_description[description] = term_id
 
     alternatives = state.get("alternatives", {})
-    alternative_by_code: dict[str, Alternative] = {}
-    for code, name in alternatives.items():
-        alt = Alternative(project_id=project_id, code=code, name=name)
-        session.add(alt)
-        alternative_by_code[code] = alt
+    alternative_rows = [
+        {"project_id": project_id, "code": code, "name": name}
+        for code, name in alternatives.items()
+    ]
+    alternative_by_code: dict[str, int] = {}
+    if alternative_rows:
+        alt_result = session.execute(
+            insert(Alternative).returning(Alternative.id, Alternative.code),
+            alternative_rows,
+        )
+        alternative_by_code = {code: alt_id for alt_id, code in alt_result}
 
     classes = state.get("classes", {})
-    class_by_code: dict[str, Class] = {}
-    for code, data in classes.items():
-        cls = Class(project_id=project_id, code=code, description=data.get("description", ""))
-        session.add(cls)
-        class_by_code[code] = cls
+    class_rows = [
+        {"project_id": project_id, "code": code, "description": data.get("description", "")}
+        for code, data in classes.items()
+    ]
+    class_by_code: dict[str, int] = {}
+    if class_rows:
+        class_result = session.execute(
+            insert(Class).returning(Class.id, Class.code),
+            class_rows,
+        )
+        class_by_code = {code: class_id for class_id, code in class_result}
 
     criteria_data = state.get("criteria", {})
-    criterion_by_code: dict[str, Criterion] = {}
-    for code, data in criteria_data.items():
-        criterion = Criterion(
-            project_id=project_id,
-            code=code,
-            name=data.get("criterion", ""),
-            kind=_normalize_kind(data.get("type")),
+    criteria_rows = [
+        {
+            "project_id": project_id,
+            "code": code,
+            "name": data.get("criterion", ""),
+            "kind": _normalize_kind(data.get("type")),
+        }
+        for code, data in criteria_data.items()
+    ]
+    criterion_by_code: dict[str, int] = {}
+    if criteria_rows:
+        criterion_result = session.execute(
+            insert(Criterion).returning(Criterion.id, Criterion.code),
+            criteria_rows,
         )
-        session.add(criterion)
-        criterion_by_code[code] = criterion
+        criterion_by_code = {code: criterion_id for criterion_id, code in criterion_result}
 
-    session.flush()
-
-    description_objects: list[CriterionDescription] = []
+    description_rows = []
     for crit_code, crit_data in criteria_data.items():
-        criterion = criterion_by_code.get(crit_code)
-        if not criterion:
+        criterion_id = criterion_by_code.get(crit_code)
+        if not criterion_id:
             continue
         for desc in crit_data.get("descriptions", []):
-            alt_term = alt_term_by_code.get(desc.get("alternative_term") or "")
-            weight_term = weight_term_by_code.get(desc.get("weight_term") or "")
-            description = CriterionDescription(
-                criterion_id=criterion.id,
-                description=desc.get("description", ""),
-                alternative_term_id=alt_term.id if alt_term else None,
-                weight_term_id=weight_term.id if weight_term else None,
+            description_rows.append(
+                {
+                    "criterion_id": criterion_id,
+                    "description": desc.get("description", ""),
+                    "alternative_term_id": alt_term_by_code.get(desc.get("alternative_term") or ""),
+                    "weight_term_id": weight_term_by_code.get(desc.get("weight_term") or ""),
+                }
             )
-            session.add(description)
-            description_objects.append(description)
 
+    description_by_key: dict[tuple[int, str], int] = {}
+    if description_rows:
+        description_result = session.execute(
+            insert(CriterionDescription).returning(
+                CriterionDescription.id,
+                CriterionDescription.criterion_id,
+                CriterionDescription.description,
+            ),
+            description_rows,
+        )
+        description_by_key = {
+            (criterion_id, description): description_id
+            for description_id, criterion_id, description in description_result
+        }
+
+    threshold_rows = []
     for crit_code, crit_data in criteria_data.items():
-        criterion = criterion_by_code.get(crit_code)
-        if not criterion:
+        criterion_id = criterion_by_code.get(crit_code)
+        if not criterion_id:
             continue
         for class_code, class_data in crit_data.get("classes", {}).items():
-            class_row = class_by_code.get(class_code)
-            if not class_row:
+            class_id = class_by_code.get(class_code)
+            if not class_id:
                 continue
-            term = alt_term_by_code.get(class_data.get("alternative_term") or "")
-            threshold = CriterionClassThreshold(
-                criterion_id=criterion.id,
-                class_id=class_row.id,
-                min_alternative_term_id=term.id if term else None,
+            threshold_rows.append(
+                {
+                    "criterion_id": criterion_id,
+                    "class_id": class_id,
+                    "min_alternative_term_id": alt_term_by_code.get(class_data.get("alternative_term") or ""),
+                }
             )
-            session.add(threshold)
-
-    session.flush()
-
-    description_by_key = {
-        (desc.criterion_id, desc.description): desc
-        for desc in description_objects
-    }
-    weight_term_by_description = {
-        term.description: term for term in weight_term_by_code.values()
-    }
+    if threshold_rows:
+        session.execute(insert(CriterionClassThreshold), threshold_rows)
 
     criteria_weights = state.get("criteria_weights", {})
+    criteria_weight_rows = []
     for crit_code, weight_desc in criteria_weights.items():
-        criterion = criterion_by_code.get(crit_code)
-        term = weight_term_by_description.get(weight_desc)
-        if not criterion or not term:
+        criterion_id = criterion_by_code.get(crit_code)
+        term_id = weight_term_by_description.get(weight_desc)
+        if not criterion_id or not term_id:
             continue
-        session.add(
-            CriteriaWeight(
-                project_id=project_id,
-                criterion_id=criterion.id,
-                weight_term_id=term.id,
-            )
+        criteria_weight_rows.append(
+            {
+                "project_id": project_id,
+                "criterion_id": criterion_id,
+                "weight_term_id": term_id,
+            }
         )
+    if criteria_weight_rows:
+        session.execute(insert(CriteriaWeight), criteria_weight_rows)
 
     evaluations = state.get("evaluations", {})
+    evaluation_rows = []
     for alt_code, crit_map in evaluations.items():
-        alt = alternative_by_code.get(alt_code)
-        if not alt:
+        alt_id = alternative_by_code.get(alt_code)
+        if not alt_id:
             continue
         for crit_code, description_text in crit_map.items():
-            criterion = criterion_by_code.get(crit_code)
-            if not criterion or not description_text:
+            criterion_id = criterion_by_code.get(crit_code)
+            if not criterion_id or not description_text:
                 continue
-            desc = description_by_key.get((criterion.id, description_text))
-            session.add(
-                Evaluation(
-                    project_id=project_id,
-                    alternative_id=alt.id,
-                    criterion_id=criterion.id,
-                    criterion_description_id=desc.id if desc else None,
-                )
+            desc_id = description_by_key.get((criterion_id, description_text))
+            evaluation_rows.append(
+                {
+                    "project_id": project_id,
+                    "alternative_id": alt_id,
+                    "criterion_id": criterion_id,
+                    "criterion_description_id": desc_id,
+                }
             )
+    if evaluation_rows:
+        session.execute(insert(Evaluation), evaluation_rows)

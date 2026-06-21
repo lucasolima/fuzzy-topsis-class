@@ -38,6 +38,15 @@ def render_decision_matrix():
     if not evaluations:
         st.session_state.messages.append(("info", "Nenhuma avaliação foi preenchida ainda. Vá para a aba de Avaliações."))
     else:
+        description_term_by_criterion = {
+            crit_id: {
+                description_data.get("description"): description_data.get("alternative_term")
+                for description_data in crit_data.get("descriptions", [])
+                if description_data.get("description")
+            }
+            for crit_id, crit_data in criteria.items()
+        }
+
         # Onde iremos armazenar os dados para plotar no Pandas e Streamlit
         matrix_data = []
 
@@ -53,14 +62,7 @@ def render_decision_matrix():
                 crit_name = crit_data.get("criterion", crit_id)
                 selected_desc = answers_alt.get(crit_id)
                 
-                # Buscar no critério qual é o alternative_term vinculado a esta descrição
-                find_term = None
-                if selected_desc:
-                    # Procura a descrição dentro das descrições do critério
-                    for d in crit_data.get("descriptions", []):
-                        if d["description"] == selected_desc:
-                            find_term = d.get("alternative_term")
-                            break
+                find_term = description_term_by_criterion.get(crit_id, {}).get(selected_desc)
                 
                 # Se não encontrou o termo (ou o usuário não avaliou aquele critério ainda)
                 if not find_term:
@@ -85,19 +87,19 @@ def render_decision_matrix():
         st.session_state.messages.append(("info", "Nenhum peso foi definido ainda. Vá para a aba de Pesos."))
         return
         
+    weight_term_by_description = {
+        w_data["description"]: term_key
+        for term_key, w_data in fuzzy_weights.items()
+        if w_data.get("description")
+    }
+
     row_pesos = {}
     
     for crit_id, crit_data in criteria.items():
         crit_name = crit_data.get("criterion", crit_id)
         selected_desc = saved_weights.get(crit_id)
         
-        weight_term = None
-        if selected_desc:
-            # Encontrar no dicionario de pesos fuzzy qual é a chave (termo) dessa descrição
-            for term_key, w_data in fuzzy_weights.items():
-                if w_data["description"] == selected_desc:
-                    weight_term = term_key
-                    break
+        weight_term = weight_term_by_description.get(selected_desc)
                     
         if not weight_term:
             weight_term = "-"

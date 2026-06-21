@@ -1,5 +1,3 @@
-import copy
-
 class FTopsisService:
     def __init__(
         self,
@@ -18,6 +16,25 @@ class FTopsisService:
         self.criteria_weights = criteria_weights or {}
         self.fuzzy_weights = fuzzy_weights or {}
         self.classes = classes or {}
+        self._evaluation_fuzzy_by_criterion = self._build_evaluation_fuzzy_lookup()
+        self._weight_fuzzy_by_description = {
+            data.get("description"): tuple(data.get("lmu", ()))
+            for data in self.fuzzy_weights.values()
+            if data.get("description") and data.get("lmu")
+        }
+
+    def _build_evaluation_fuzzy_lookup(self) -> dict[str, dict[str, tuple[float, float, float]]]:
+        lookup: dict[str, dict[str, tuple[float, float, float]]] = {}
+        for crit_id, criterion_data in self.criteria.items():
+            crit_lookup = lookup.setdefault(crit_id, {})
+            for description_data in criterion_data.get("descriptions", []):
+                description = description_data.get("description")
+                term = description_data.get("alternative_term")
+                fuzzy_data = self.fuzzy_alternatives.get(term or "")
+                lmu = fuzzy_data.get("lmu") if fuzzy_data else None
+                if description and lmu:
+                    crit_lookup[description] = tuple(lmu)
+        return lookup
 
     def _get_fuzzy_value_for_evaluation(self, crit_id: str, selected_description: str) -> list[float]:
         """
@@ -26,15 +43,9 @@ class FTopsisService:
         """
         if not selected_description:
             return None
-            
-        criterion_data = self.criteria.get(crit_id, {})
-        for index in criterion_data.get("descriptions", []):
-            if index.get("description") == selected_description:
-                term = index.get("alternative_term")
-                if term and term in self.fuzzy_alternatives:
-                    # Retorna [l, m, u]
-                    return list(self.fuzzy_alternatives[term].get("lmu"))
-        return None
+
+        fuzzy_value = self._evaluation_fuzzy_by_criterion.get(crit_id, {}).get(selected_description)
+        return list(fuzzy_value) if fuzzy_value else None
 
     def build_decision_matrix(self) -> dict:
         """
@@ -103,17 +114,20 @@ class FTopsisService:
                     ideal_values[crit_id] = min(v[0] for v in criterion_values)
 
         # 2. Computar a divisão criando a Nova Matriz R_ij
-        normalized_matrix = copy.deepcopy(matrix)
+        normalized_matrix = {}
 
         for ent_id, scores in matrix.items():
+            normalized_scores = {}
             for crit_id, lmu_val in scores.items():
                 if not lmu_val:
+                    normalized_scores[crit_id] = lmu_val
                     continue # Célula vazia / não avaliada
                 
                 tipo = self.criteria[crit_id].get("type", "benefício").lower()
                 ideal_val = ideal_values.get(crit_id)
                 
                 if not ideal_val:
+                    normalized_scores[crit_id] = lmu_val
                     continue
                 
                 l, m, u = lmu_val
@@ -133,7 +147,9 @@ class FTopsisService:
                         round(ideal_val / l, 4) if l != 0 else 0.0
                     ]
                     
-                normalized_matrix[ent_id][crit_id] = r_ij
+                normalized_scores[crit_id] = r_ij
+
+            normalized_matrix[ent_id] = normalized_scores
                 
         return normalized_matrix, ideal_values
 
@@ -177,27 +193,30 @@ class FTopsisService:
         if not selected_desc:
             return None
             
-        for term_key, w_data in self.fuzzy_weights.items():
-            if w_data.get("description") == selected_desc:
-                return list(w_data.get("lmu"))
-        
-        return None
+        fuzzy_value = self._weight_fuzzy_by_description.get(selected_desc)
+        return list(fuzzy_value) if fuzzy_value else None
 
     def weight_matrix(self, normalized_matrix: dict) -> dict:
         """
         Aplica os pesos na matriz já normalizada (V_ij = r_ij * W_j).
         Multiplica os componentes fuzzy: l*l_w, m*m_w, u*u_w.
         """
-        weighted_matrix = copy.deepcopy(normalized_matrix)
+        weighted_matrix = {}
+        weight_by_criterion = {
+            crit_id: self._get_fuzzy_weight_for_criterion(crit_id)
+            for crit_id in self.criteria.keys()
+        }
         
         for alt_id, scores in normalized_matrix.items():
+            weighted_scores = {}
             for crit_id, r_ij in scores.items():
                 if not r_ij:
+                    weighted_scores[crit_id] = r_ij
                     continue
                     
-                w_j = self._get_fuzzy_weight_for_criterion(crit_id)
+                w_j = weight_by_criterion.get(crit_id)
                 if not w_j:
-                    weighted_matrix[alt_id][crit_id] = None
+                    weighted_scores[crit_id] = None
                     continue
                 
                 # F-TOPSIS Ponderação
@@ -208,7 +227,9 @@ class FTopsisService:
                     round(r_ij[2] * w_j[2], 4)
                 ]
                 
-                weighted_matrix[alt_id][crit_id] = v_ij
+                weighted_scores[crit_id] = v_ij
+
+            weighted_matrix[alt_id] = weighted_scores
                 
         return weighted_matrix
 

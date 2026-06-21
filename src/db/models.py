@@ -5,6 +5,7 @@ from sqlalchemy import (
     DateTime,
     Enum,
     ForeignKey,
+    Index,
     Numeric,
     String,
     UniqueConstraint,
@@ -32,7 +33,10 @@ class Project(Base):
 
 class Alternative(Base):
     __tablename__ = "alternatives"
-    __table_args__ = (UniqueConstraint("project_id", "code", name="uq_alternatives_project_code"),)
+    __table_args__ = (
+        UniqueConstraint("project_id", "code", name="uq_alternatives_project_code"),
+        Index("ix_alternatives_project_id", "project_id"),
+    )
 
     id = Column(BigInteger, primary_key=True)
     project_id = Column(BigInteger, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
@@ -45,7 +49,10 @@ class Alternative(Base):
 
 class Class(Base):
     __tablename__ = "classes"
-    __table_args__ = (UniqueConstraint("project_id", "code", name="uq_classes_project_code"),)
+    __table_args__ = (
+        UniqueConstraint("project_id", "code", name="uq_classes_project_code"),
+        Index("ix_classes_project_id", "project_id"),
+    )
 
     id = Column(BigInteger, primary_key=True)
     project_id = Column(BigInteger, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
@@ -65,6 +72,7 @@ class FuzzyTerm(Base):
     __table_args__ = (
         UniqueConstraint("project_id", "code", "term_type", name="uq_fuzzy_terms_project_code_type"),
         CheckConstraint("l <= m AND m <= u", name="ck_fuzzy_terms_lmu_order"),
+        Index("ix_fuzzy_terms_project_id", "project_id"),
     )
 
     id = Column(BigInteger, primary_key=True)
@@ -81,7 +89,10 @@ class FuzzyTerm(Base):
 
 class Criterion(Base):
     __tablename__ = "criteria"
-    __table_args__ = (UniqueConstraint("project_id", "code", name="uq_criteria_project_code"),)
+    __table_args__ = (
+        UniqueConstraint("project_id", "code", name="uq_criteria_project_code"),
+        Index("ix_criteria_project_id", "project_id"),
+    )
 
     id = Column(BigInteger, primary_key=True)
     project_id = Column(BigInteger, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)
@@ -102,6 +113,11 @@ class Criterion(Base):
 
 class CriterionDescription(Base):
     __tablename__ = "criterion_descriptions"
+    __table_args__ = (
+        Index("ix_criterion_descriptions_criterion_id", "criterion_id"),
+        Index("ix_criterion_descriptions_alternative_term_id", "alternative_term_id"),
+        Index("ix_criterion_descriptions_weight_term_id", "weight_term_id"),
+    )
 
     id = Column(BigInteger, primary_key=True)
     criterion_id = Column(BigInteger, ForeignKey("criteria.id", ondelete="CASCADE"), nullable=False)
@@ -116,6 +132,9 @@ class CriterionClassThreshold(Base):
     __tablename__ = "criterion_class_thresholds"
     __table_args__ = (
         UniqueConstraint("criterion_id", "class_id", name="uq_criterion_class_threshold"),
+        Index("ix_criterion_class_thresholds_criterion_id", "criterion_id"),
+        Index("ix_criterion_class_thresholds_class_id", "class_id"),
+        Index("ix_criterion_class_thresholds_min_alternative_term_id", "min_alternative_term_id"),
     )
 
     id = Column(BigInteger, primary_key=True)
@@ -131,6 +150,10 @@ class Evaluation(Base):
     __tablename__ = "evaluations"
     __table_args__ = (
         UniqueConstraint("project_id", "alternative_id", "criterion_id", name="uq_evaluations_project_alt_crit"),
+        Index("ix_evaluations_project_id", "project_id"),
+        Index("ix_evaluations_alternative_id", "alternative_id"),
+        Index("ix_evaluations_criterion_id", "criterion_id"),
+        Index("ix_evaluations_criterion_description_id", "criterion_description_id"),
     )
 
     id = Column(BigInteger, primary_key=True)
@@ -146,7 +169,12 @@ class Evaluation(Base):
 
 class CriteriaWeight(Base):
     __tablename__ = "criteria_weights"
-    __table_args__ = (UniqueConstraint("project_id", "criterion_id", name="uq_criteria_weights_project_crit"),)
+    __table_args__ = (
+        UniqueConstraint("project_id", "criterion_id", name="uq_criteria_weights_project_crit"),
+        Index("ix_criteria_weights_project_id", "project_id"),
+        Index("ix_criteria_weights_criterion_id", "criterion_id"),
+        Index("ix_criteria_weights_weight_term_id", "weight_term_id"),
+    )
 
     id = Column(BigInteger, primary_key=True)
     project_id = Column(BigInteger, ForeignKey("projects.id", ondelete="CASCADE"), nullable=False)

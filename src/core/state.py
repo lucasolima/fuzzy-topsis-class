@@ -1,4 +1,5 @@
 import copy
+import hashlib
 import json
 import os
 
@@ -14,6 +15,7 @@ from src.db.repository import (
     save_project_state,
 )
 
+@st.cache_data(show_spinner=False)
 def load_data(filename):
     """Carrega dados de um arquivo JSON da pasta data/."""
     # Encontra o caminho absoluto da pasta data baseada na raiz do projeto
@@ -190,11 +192,19 @@ def _get_project_snapshot_from_state() -> dict:
     return snapshot
 
 
+def _project_snapshot_signature(snapshot: dict) -> str:
+    payload = json.dumps(snapshot, sort_keys=True, ensure_ascii=False, separators=(",", ":"))
+    return hashlib.blake2b(payload.encode("utf-8"), digest_size=16).hexdigest()
+
+
 def _apply_project_snapshot(snapshot: dict):
     for key in PROJECT_STATE_KEYS:
         if key in snapshot:
             st.session_state[key] = copy.deepcopy(snapshot[key])
     st.session_state._data_dirty = True
+    st.session_state._last_saved_project_signature = _project_snapshot_signature(
+        _get_project_snapshot_from_state()
+    )
 
 
 def _hydrate_project_state(state: dict) -> dict:
@@ -287,7 +297,12 @@ def delete_project(project_id: int) -> int | None:
 def save_current_project_snapshot():
     project_id = st.session_state.current_project_id
     if project_id:
-        save_project_state(project_id, _get_project_snapshot_from_state())
+        snapshot = _get_project_snapshot_from_state()
+        signature = _project_snapshot_signature(snapshot)
+        if signature == st.session_state.get("_last_saved_project_signature"):
+            return
+        save_project_state(project_id, snapshot)
+        st.session_state._last_saved_project_signature = signature
         st.session_state._data_dirty = True
 
 

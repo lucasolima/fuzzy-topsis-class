@@ -81,6 +81,12 @@ def _validate_fuzzy_terms(draft: dict, label: str) -> list[str]:
                 errors.append(f"{label}: A descrição do termo '{term_clean}' deve ter no máximo 50 caracteres.")
             if not desc[0].isalnum():
                 errors.append(f"{label}: O primeiro caractere da descrição do termo '{term_clean}' não pode ser um caractere especial.")
+
+        lmu = data.get("lmu", [0.0, 0.0, 0.0])
+        l, m, u = float(lmu[0]), float(lmu[1]), float(lmu[2])
+        if not (l <= m <= u):
+            errors.append(f"{label}: No termo '{term_clean}', os parâmetros fuzzy devem seguir a regra l <= m <= u (limite inferior <= valor modal <= limite superior). Valores informados: l={l}, m={m}, u={u}.")
+
     return errors
 
 

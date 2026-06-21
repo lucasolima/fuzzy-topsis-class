@@ -53,6 +53,63 @@ def _render_html_table(headers, rows):
     """
     st.markdown(table_html, unsafe_allow_html=True)
 
+
+@st.cache_data(show_spinner=False)
+def _calculate_classification(
+    alternatives,
+    criteria,
+    evaluations,
+    fuzzy_alternatives,
+    criteria_weights,
+    fuzzy_weights,
+    classes,
+):
+    ftopsis_service = FTopsisService(
+        criteria=criteria,
+        alternatives=alternatives,
+        evaluations=evaluations,
+        fuzzy_alternatives=fuzzy_alternatives,
+        criteria_weights=criteria_weights,
+        fuzzy_weights=fuzzy_weights,
+        classes=classes,
+    )
+
+    raw_matrix = ftopsis_service.build_decision_matrix()
+    raw_matrix_classes = ftopsis_service.build_classes_matrix()
+    ideal_values = ftopsis_service.get_global_ideal_values(raw_matrix, raw_matrix_classes)
+    normalized_matrix, _ = ftopsis_service.normalize_matrix(raw_matrix, ideal_values)
+    normalized_matrix_classes, _ = ftopsis_service.normalize_matrix(raw_matrix_classes, ideal_values)
+    weighted_matrix = ftopsis_service.weight_matrix(normalized_matrix)
+    weighted_matrix_classes = ftopsis_service.weight_matrix(normalized_matrix_classes)
+    agrupamentos = ftopsis_service.calculate_ideal_solution_from_classes(weighted_matrix_classes)
+    ideals_distances = ftopsis_service.calculate_distances_ideais(weighted_matrix, agrupamentos)
+
+    if not ideals_distances:
+        return [], []
+
+    ideals_cci = ftopsis_service.calculate_cci_ideais(ideals_distances)
+    label_order = list(next(iter(ideals_cci.values())).keys()) if ideals_cci else []
+    cci_rows = []
+
+    for alt_id, info_cci in ideals_cci.items():
+        alt_nome = alternatives.get(alt_id, alt_id)
+        row = {"Alternativa": alt_nome}
+
+        best_class = None
+        greater_cci = -1.0
+
+        for label_combinacao in label_order:
+            cci_val = info_cci.get(label_combinacao, 0.0)
+            row[label_combinacao] = cci_val
+            if cci_val > greater_cci:
+                greater_cci = cci_val
+                best_class = label_combinacao
+
+        row["Classe Recomendada"] = best_class
+        cci_rows.append(row)
+
+    return cci_rows, label_order
+
 def render_weighted_matrix():
     if "messages" not in st.session_state:
         st.session_state.messages = []
@@ -82,56 +139,17 @@ def render_weighted_matrix():
         st.session_state.messages.append(("info", "Nenhum peso definido ainda. Vá para a aba de Pesos."))
         return
 
-    # Injeta a dependência no serviço
-    ftopsis_service = FTopsisService(
-        criteria=criteria,
-        alternatives=alternatives,
-        evaluations=evaluations,
-        fuzzy_alternatives=fuzzy_alternatives,
-        criteria_weights=criteria_weights,
-        fuzzy_weights=fuzzy_weights,
-        classes=classes
+    cci_rows, label_order = _calculate_classification(
+        alternatives,
+        criteria,
+        evaluations,
+        fuzzy_alternatives,
+        criteria_weights,
+        fuzzy_weights,
+        classes,
     )
 
-    # Passo 1: Matrizes Brutas Fuzzy
-    raw_matrix = ftopsis_service.build_decision_matrix()
-    raw_matrix_classes = ftopsis_service.build_classes_matrix()
-    
-    # Valores ideais globais
-    ideal_values = ftopsis_service.get_global_ideal_values(raw_matrix, raw_matrix_classes)
-    
-    # Passo 2: Normalizar Matrizes (Alternativas e Classes)
-    normalized_matrix, _ = ftopsis_service.normalize_matrix(raw_matrix, ideal_values)
-    normalized_matrix_classes, _ = ftopsis_service.normalize_matrix(raw_matrix_classes, ideal_values)
-    
-    # Passo 3: Ponderar a Matriz Normalizada
-    weighted_matrix = ftopsis_service.weight_matrix(normalized_matrix)
-    weighted_matrix_classes = ftopsis_service.weight_matrix(normalized_matrix_classes)
-
-    agrupamentos = ftopsis_service.calculate_ideal_solution_from_classes(weighted_matrix_classes)
-    ideals_distances = ftopsis_service.calculate_distances_ideais(weighted_matrix, agrupamentos)
-    
-    if ideals_distances:
-        ideals_cci = ftopsis_service.calculate_cci_ideais(ideals_distances)
-        cci_rows = []
-        label_order = list(next(iter(ideals_cci.values())).keys()) if ideals_cci else []
-        for alt_id, info_cci in ideals_cci.items():
-            alt_nome = alternatives.get(alt_id, alt_id)
-            row = {"Alternativa": alt_nome}
-
-            best_class = None
-            greater_cci = -1.0
-
-            for label_combinacao in label_order:
-                cci_val = info_cci.get(label_combinacao, 0.0)
-                row[label_combinacao] = cci_val
-                if cci_val > greater_cci:
-                    greater_cci = cci_val
-                    best_class = label_combinacao
-
-            row["Classe Recomendada"] = best_class
-            cci_rows.append(row)
-
+    if cci_rows:
         headers = ["Alternativa"] + label_order + ["Classe Recomendada"]
         table_rows = []
         for row in cci_rows:
@@ -169,11 +187,15 @@ def render_weighted_matrix():
 
         ranking_data.sort(key=lambda item: (item["ordem_classe"], -item["Pontuação"]))
 
-        st.table([
-            {
-                "Alternativa": item["Alternativa"],
-                "Pontuação": f'{item["Pontuação"]:.3f}',
-                "Classe": item["Classe"]
-            }
-            for item in ranking_data
-        ])
+        st.dataframe(
+            [
+                {
+                    "Alternativa": item["Alternativa"],
+                    "Pontuação": f'{item["Pontuação"]:.3f}',
+                    "Classe": item["Classe"],
+                }
+                for item in ranking_data
+            ],
+            hide_index=True,
+            use_container_width=True,
+        )

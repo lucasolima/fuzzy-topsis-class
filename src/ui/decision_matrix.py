@@ -72,7 +72,7 @@ def render_decision_matrix():
                 
             matrix_data.append(row)
             
-        st.table(matrix_data)
+        st.dataframe(matrix_data, hide_index=True, use_container_width=True)
 
     st.markdown("---")
     st.header("Matriz dos Critérios")
@@ -106,4 +106,4 @@ def render_decision_matrix():
             
         row_pesos[crit_name] = weight_term
 
-    st.table([row_pesos])
+    st.dataframe([row_pesos], hide_index=True, use_container_width=True)

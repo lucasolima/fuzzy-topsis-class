@@ -44,15 +44,20 @@ def main():
                 "Renomear projeto",
                 value=current_name,
                 key="rename_project_input_modal",
+                max_chars=100,
             )
             
             col_save = st.columns(1)[0]
             with col_save:
                 if st.button("Salvar", key="save_project_rename", use_container_width=True):
-                    if new_name.strip():
-                        rename_project(st.session_state.current_project_id, new_name.strip())
-                        st.session_state._project_changed = True
-                        st.rerun()
+                    name_trimmed = new_name.strip()
+                    if name_trimmed:
+                        try:
+                            rename_project(st.session_state.current_project_id, name_trimmed)
+                            st.session_state._project_changed = True
+                            st.rerun()
+                        except ValueError as e:
+                            st.error(str(e))
                     else:
                         st.warning("Informe um nome para o projeto.")
 
@@ -65,13 +70,18 @@ def main():
                 "Nome do Projeto",
                 placeholder="Ex: Projeto de Expansão X",
                 key="project_new_name_sidebar",
+                max_chars=100,
             )
             if st.button("Criar Projeto", key="sidebar_project_create_btn", use_container_width=True):
-                if new_project_name.strip():
-                    new_project_id = create_project(new_project_name.strip())
-                    switch_project(new_project_id)
-                    st.session_state._project_changed = True
-                    st.rerun()
+                name_trimmed = new_project_name.strip()
+                if name_trimmed:
+                    try:
+                        new_project_id = create_project(name_trimmed)
+                        switch_project(new_project_id)
+                        st.session_state._project_changed = True
+                        st.rerun()
+                    except ValueError as e:
+                        st.error(str(e))
                 else:
                     st.warning("Informe um nome para o projeto.")
 

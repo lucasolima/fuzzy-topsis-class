@@ -234,14 +234,31 @@ def list_projects() -> dict:
     return db_list_projects()
 
 
+def validate_project_name(name: str) -> str | None:
+    cleaned = name.strip()
+    if not cleaned:
+        return "O nome do projeto não pode ser vazio."
+    if len(cleaned) > 100:
+        return "O nome do projeto deve ter no máximo 100 caracteres."
+    if not cleaned[0].isalnum():
+        return "O primeiro caractere do nome do projeto não pode ser um caractere especial."
+    return None
+
+
 def create_project(name: str) -> int:
-    project_id = db_create_project(name)
+    name_error = validate_project_name(name)
+    if name_error:
+        raise ValueError(name_error)
+    project_id = db_create_project(name.strip())
     save_project_state(project_id, _build_default_project_state())
     return project_id
 
 
 def rename_project(project_id: int, name: str):
-    db_rename_project(project_id, name)
+    name_error = validate_project_name(name)
+    if name_error:
+        raise ValueError(name_error)
+    db_rename_project(project_id, name.strip())
 
 
 def delete_project(project_id: int) -> int | None:

@@ -46,8 +46,13 @@ def _validate_classes(draft: dict) -> list[str]:
     if len(draft) != 3:
         errors.append("É necessário cadastrar exatamente 3 classes.")
     for class_id, data in draft.items():
-        if not str(data.get("description", "")).strip():
+        desc = str(data.get("description", "")).strip()
+        if not desc:
             errors.append(f"Classe {class_id} está sem descrição.")
+        elif len(desc) > 100:
+            errors.append(f"A descrição da classe {class_id} deve ter no máximo 100 caracteres.")
+        elif not desc[0].isalnum():
+            errors.append(f"O primeiro caractere da classe {class_id} não pode ser um caractere especial.")
     return errors
 
 
@@ -87,7 +92,8 @@ def render_classes():
                     value=data["description"], 
                     key=f"{key_prefix}class_desc_{cid}", 
                     label_visibility="collapsed",
-                    placeholder="Ex: Alta Prioridade"
+                    placeholder="Ex: Alta Prioridade",
+                    max_chars=100
                 )
                 if new_desc != data["description"]:
                     st.session_state.classes_draft[cid]["description"] = new_desc

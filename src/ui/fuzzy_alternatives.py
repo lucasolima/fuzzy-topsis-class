@@ -64,8 +64,23 @@ def _init_fuzzy_weight_draft():
 def _validate_fuzzy_terms(draft: dict, label: str) -> list[str]:
     errors = []
     for term_key, data in draft.items():
-        if not str(data.get("description", "")).strip():
-            errors.append(f"{label}: termo {term_key} está sem descrição.")
+        term_clean = str(term_key).strip()
+        if not term_clean:
+            errors.append(f"{label}: O termo não pode ser vazio.")
+        else:
+            if len(term_clean) > 3:
+                errors.append(f"{label}: O termo '{term_clean}' deve ter no máximo 3 caracteres.")
+            if not term_clean.isalpha():
+                errors.append(f"{label}: O termo '{term_clean}' deve conter apenas letras.")
+
+        desc = str(data.get("description", "")).strip()
+        if not desc:
+            errors.append(f"{label}: O termo '{term_clean}' está sem descrição.")
+        else:
+            if len(desc) > 50:
+                errors.append(f"{label}: A descrição do termo '{term_clean}' deve ter no máximo 50 caracteres.")
+            if not desc[0].isalnum():
+                errors.append(f"{label}: O primeiro caractere da descrição do termo '{term_clean}' não pode ser um caractere especial.")
     return errors
 
 
@@ -134,7 +149,8 @@ def render_fuzzy_config_table(
                     "Termo", 
                     value=key, 
                     key=f"term_{k_base}", 
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    max_chars=3
                 )
                 if new_key != key:
                     update_fuzzy_term_key(fuzzy_terms, key, new_key)
@@ -144,7 +160,8 @@ def render_fuzzy_config_table(
                     "Descrição", 
                     value=data["description"], 
                     key=f"desc_{k_base}", 
-                    label_visibility="collapsed"
+                    label_visibility="collapsed",
+                    max_chars=50
                 )
                 if new_desc != data["description"]:
                     update_fuzzy_term_value(
@@ -248,7 +265,7 @@ def render_fuzzy_alternatives():
     if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_fuzzy_alt"):
         errors = _validate_fuzzy_terms(st.session_state.fuzzy_number_alternatives_draft, "Alternativas")
         if errors:
-            st.session_state.messages.append(("error", "Há campos em branco. Corrija antes de salvar."))
+            st.session_state.messages.append(("error", "Há inconsistências ou campos inválidos. Corrija antes de salvar."))
             for msg in errors:
                 st.session_state.messages.append(("error", msg))
             st.rerun()
@@ -290,7 +307,7 @@ def render_fuzzy_alternatives():
     if st.button("💾 Salvar Alterações", key=f"{key_prefix}save_fuzzy_weight"):
         errors = _validate_fuzzy_terms(st.session_state.fuzzy_number_weights_draft, "Pesos")
         if errors:
-            st.session_state.messages.append(("error", "Há campos em branco. Corrija antes de salvar."))
+            st.session_state.messages.append(("error", "Há inconsistências ou campos inválidos. Corrija antes de salvar."))
             for msg in errors:
                 st.session_state.messages.append(("error", msg))
             st.rerun()

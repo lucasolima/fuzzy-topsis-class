@@ -45,8 +45,13 @@ def _init_alternatives_draft():
 def _validate_alternatives(draft: dict) -> list[str]:
     errors = []
     for alt_id, name in draft.items():
-        if not str(name).strip():
+        name_str = str(name).strip()
+        if not name_str:
             errors.append(f"Alternativa {alt_id} está sem descrição.")
+        elif len(name_str) > 100:
+            errors.append(f"O nome da alternativa {alt_id} deve ter no máximo 100 caracteres.")
+        elif not name_str[0].isalnum():
+            errors.append(f"O primeiro caractere da alternativa {alt_id} não pode ser um caractere especial.")
     return errors
 
 def render_alternatives():
@@ -83,7 +88,8 @@ def render_alternatives():
                     value=alt_value,
                     label_visibility="collapsed",
                     key=f"{key_prefix}input_{alt_id}",
-                    placeholder="Digite o nome da alternativa (Ex: Sistema X - Módulo Y)..."
+                    placeholder="Digite o nome da alternativa (Ex: Sistema X - Módulo Y)...",
+                    max_chars=100
                 )
                 
                 # Se algo foi modificado, atualiza no core

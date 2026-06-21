@@ -123,15 +123,27 @@ def sync_classes_in_criteria(criteria_draft: dict, classes: dict):
 def _validate_criteria(criteria: dict) -> list[str]:
     errors = []
     for crit_id, crit_data in criteria.items():
-        if not str(crit_data.get("criterion", "")).strip():
+        name_clean = str(crit_data.get("criterion", "")).strip()
+        if not name_clean:
             errors.append(f"Critério {crit_id} está sem nome.")
+        else:
+            if len(name_clean) > 50:
+                errors.append(f"O nome do critério {crit_id} deve ter no máximo 50 caracteres.")
+            if not name_clean[0].isalnum():
+                errors.append(f"O primeiro caractere do critério {crit_id} não pode ser um caractere especial.")
 
-        for idx, desc in enumerate(crit_data.get("descriptions", []), start=1):
-            if not str(desc.get("description", "")).strip():
+        for idx, desc_item in enumerate(crit_data.get("descriptions", []), start=1):
+            desc_clean = str(desc_item.get("description", "")).strip()
+            if not desc_clean:
                 errors.append(f"Critério {crit_id}: descrição {idx} está vazia.")
-            if not desc.get("alternative_term"):
+            else:
+                if len(desc_clean) > 250:
+                    errors.append(f"Critério {crit_id}: a descrição {idx} deve ter no máximo 250 caracteres.")
+                if not desc_clean[0].isalnum():
+                    errors.append(f"Critério {crit_id}: o primeiro caractere da descrição {idx} não pode ser um caractere especial.")
+            if not desc_item.get("alternative_term"):
                 errors.append(f"Critério {crit_id}: descrição {idx} sem termo de alternativa.")
-            if not desc.get("weight_term"):
+            if not desc_item.get("weight_term"):
                 errors.append(f"Critério {crit_id}: descrição {idx} sem termo de peso.")
 
         for class_id, class_data in crit_data.get("classes", {}).items():
@@ -181,7 +193,8 @@ def render_criteria():
                     new_name = st.text_input(
                         "Nome do Critério", 
                         value=crit_data["criterion"], 
-                        key=f"{key_prefix}nome_{crit_id}"
+                        key=f"{key_prefix}nome_{crit_id}",
+                        max_chars=50
                     )
                     if new_name != crit_data["criterion"]:
                         update_criterion_field(criteria, crit_id, "criterion", new_name)
@@ -225,6 +238,7 @@ def render_criteria():
                             value=desc["description"],
                             key=f"{key_prefix}d_desc_{crit_id}_{i}",
                             label_visibility="collapsed",
+                            max_chars=250
                         )
                         if n_desc != desc["description"]:
                             update_criterion_description(criteria, crit_id, i, "description", n_desc)

@@ -10,7 +10,7 @@ load_dotenv(REPO_ROOT / ".env")
 def build_database_url() -> str:
     env_url = os.getenv("DATABASE_URL")
     if env_url:
-        return env_url
+        return env_url.replace("postgres://", "postgresql+psycopg2://")
 
     user = os.getenv("POSTGRES_USER", "postgres")
     password = os.getenv("POSTGRES_PASSWORD", "postgres")

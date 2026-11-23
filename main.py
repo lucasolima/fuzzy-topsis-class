@@ -92,9 +92,9 @@ def main():
         def _modal_body():
             st.write("Selecione qual etapa da parametrização deseja configurar:")
             
-            if st.button("👥 Perfis de Prioridade", key="modal_btn_perfis", use_container_width=True):
+            if st.button("👥 Perfis de Classe", key="modal_btn_perfis", use_container_width=True):
                 st.session_state.selected_section = "Parametrização do Modelo"
-                st.session_state.sidebar_menu_param = "Perfis de Prioridade"
+                st.session_state.sidebar_menu_param = "Perfis de Classe"
                 st.rerun()
                 
             if st.button("🔢 Números Fuzzy", key="modal_btn_fuzzy", use_container_width=True):
@@ -209,7 +209,7 @@ def main():
         if secao == "Cadastro das Demandas":
             selected_menu = "Alternativas"
         elif secao == "Parametrização do Modelo":
-            selected_menu = st.session_state.get("sidebar_menu_param", "Perfis de Prioridade")
+            selected_menu = st.session_state.get("sidebar_menu_param", "Perfis de Classe")
             st.session_state.sidebar_menu_param = selected_menu
             st.markdown(f"🔧 **Parametrização:** {selected_menu}")
         elif secao == "Avaliação das Alternativas":
@@ -236,7 +236,7 @@ def main():
     if secao == "Cadastro das Demandas" and selected_menu == "Alternativas":
         render_alternatives()
 
-    elif selected_menu == "Perfis de Prioridade":
+    elif selected_menu == "Perfis de Classe":
         from src.ui.classes_config import render_classes
         render_classes()
         

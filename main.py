@@ -174,18 +174,17 @@ def main():
         st.markdown("---")
         
         st.write("**Selecione a Fase:**")
-        col_sec, col_param = st.columns([4, 1])
+        col_sec = st.container()
         
         with col_sec:
-            options = ["Cadastro das Demandas", "Avaliação das Alternativas", "Classificação Final"]
+            options = ["Parametrização do Modelo", "Avaliação das Alternativas", "Classificação Final"]
             
             if "selected_section" not in st.session_state:
                 st.session_state.selected_section = options[0]
             
-            try:
-                current_idx = options.index(st.session_state.selected_section)
-            except ValueError:
-                current_idx = 0
+            if st.session_state.selected_section not in options:
+                st.session_state.selected_section = options[0]
+            current_idx = options.index(st.session_state.selected_section)
                 
             def _on_sec_change():
                 if "_sidebar_sec_selectbox" in st.session_state:
@@ -200,22 +199,20 @@ def main():
                 label_visibility="collapsed"
             )
             
-        with col_param:
-            if st.button("⚙️", key="btn_param_modelo", help="Parametrização do Modelo", use_container_width=True):
-                _param_options_modal()
-
         secao = st.session_state.selected_section
         
         if secao == "Cadastro das Demandas":
             selected_menu = "Alternativas"
         elif secao == "Parametrização do Modelo":
-            selected_menu = st.session_state.get("sidebar_menu_param", "Perfis de Classe")
-            st.session_state.sidebar_menu_param = selected_menu
-            st.markdown(f"🔧 **Parametrização:** {selected_menu}")
+            selected_menu = st.radio(
+                "Opções de Parametrização:",
+                ["Cadastro das Demandas", "Perfis de Classe", "Números Fuzzy", "Critérios"],
+                key="sidebar_menu_param",
+            )
         elif secao == "Avaliação das Alternativas":
             selected_menu = st.radio(
                 "Opções de Avaliação:",
-                ["Alternativas", "Pesos"],
+                ["Alternativas", "Pesos", "Classes"],
                 key="sidebar_menu_eval",
             )
         else:
@@ -233,7 +230,7 @@ def main():
     system_data.update_from_state(st.session_state)
 
     # 3. Renderização Condicional da Navegação
-    if secao == "Cadastro das Demandas" and selected_menu == "Alternativas":
+    if secao == "Parametrização do Modelo" and selected_menu == "Cadastro das Demandas":
         render_alternatives()
 
     elif selected_menu == "Perfis de Classe":
@@ -246,6 +243,10 @@ def main():
     elif selected_menu == "Critérios":
         from src.ui.criteria_config import render_criteria
         render_criteria()
+
+    elif secao == "Avaliação das Alternativas" and selected_menu == "Classes":
+        from src.ui.criteria_config import render_criteria_thresholds
+        render_criteria_thresholds()
         
     elif secao == "Avaliação das Alternativas" and selected_menu == "Alternativas":
         from src.ui.evaluations import render_evaluations

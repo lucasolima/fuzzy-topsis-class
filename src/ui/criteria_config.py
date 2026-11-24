@@ -146,12 +146,6 @@ def _validate_criteria(criteria: dict) -> list[str]:
             if not desc_item.get("weight_term"):
                 errors.append(f"Critério {crit_id}: descrição {idx} sem termo de peso.")
 
-        for class_id, class_data in crit_data.get("classes", {}).items():
-            if not class_data.get("alternative_term"):
-                errors.append(
-                    f"Critério {crit_id}: classe {class_id} sem termo mínimo de alternativa."
-                )
-
     return errors
 
 def render_criteria():
@@ -288,41 +282,6 @@ def render_criteria():
 
                 st.markdown("---")
                 
-                # Bloco de Classes
-                st.markdown("#### Classes (Limiares do Critério)")
-                if not crit_data["classes"]:
-                    st.session_state.messages.append(("info", "Não há classes cadastradas na primeira aba."))
-                else:
-                    ch1, ch2, _ = st.columns([5, 3, 2])
-                    with ch1: st.write("**Classe**")
-                    with ch2: st.write("**Termo Mínimo (Alternativa)**")
-                    
-                    for cid, cdata in crit_data["classes"].items():
-                        cc1, cc2, _ = st.columns([5, 3, 2])
-                        with cc1:
-                            st.text_input(
-                                "Classe",
-                                value=cdata["description"],
-                                disabled=True,
-                                key=f"{key_prefix}c_desc_{crit_id}_{cid}",
-                                label_visibility="collapsed",
-                            )
-                        with cc2:
-                            current_c_alt = cdata["alternative_term"]
-                            if current_c_alt not in options_alt and terms_alt:
-                                current_c_alt = options_alt[0]
-                            idx_calt = options_alt.index(current_c_alt) if current_c_alt in options_alt else 0
-                            
-                            n_c_alt = st.selectbox(
-                                "Termo Mínimo",
-                                options=options_alt,
-                                index=idx_calt,
-                                key=f"{key_prefix}c_talt_{crit_id}_{cid}",
-                                label_visibility="collapsed",
-                            )
-                            if n_c_alt != cdata["alternative_term"] and terms_alt:
-                                update_criterion_class(criteria, crit_id, cid, "alternative_term", n_c_alt)
-
     st.markdown("---")
     if st.button("➕ Adicionar", key=f"{key_prefix}add_criteria_btn"):
         add_criterion(criteria, "next_cri_id_draft", classes)
@@ -348,3 +307,80 @@ def render_criteria():
         save_current_project_snapshot()
         st.session_state.messages.append(("success", "Alterações salvas com sucesso!"))
         st.rerun()
+
+
+def render_criteria_thresholds():
+    """Configura os termos mínimos por classe para cada critério."""
+    if "messages" not in st.session_state:
+        st.session_state.messages = []
+    _display_and_clear_messages()
+    st.header("Limiares dos Critérios")
+    st.markdown("Defina, para cada critério, o termo mínimo de alternativa exigido por classe.")
+
+    _init_criteria_draft()
+    project_id = st.session_state.get("current_project_id", "default")
+    key_prefix = f"p{project_id}_threshold_"
+    criteria = st.session_state.criteria_draft
+    classes = st.session_state.get("classes", {})
+    sync_classes_in_criteria(criteria, classes)
+    terms_alt = list(st.session_state.get("fuzzy_number_alternatives", {}).keys())
+    options_alt = terms_alt if terms_alt else ["(Vazio)"]
+
+    crit_items = list(criteria.items())
+    class_items = list(classes.items())
+    if not crit_items:
+        st.info("Cadastre primeiro os critérios para configurar seus limiares.")
+    elif not class_items:
+        st.info("Cadastre primeiro os perfis de classe para configurar os limiares.")
+    else:
+        # Usa a mesma disposição matricial da avaliação: classes nas linhas,
+        # critérios nas colunas e uma célula de seleção para cada combinação.
+        header_cols = st.columns([3] + [2 for _ in crit_items])
+        with header_cols[0]:
+            st.markdown("**Classes**")
+        for col, (_, crit_data) in zip(header_cols[1:], crit_items):
+            with col:
+                st.markdown(f"**{crit_data.get('criterion', '') or 'Critério Sem Nome'}**")
+
+        with st.container(border=True):
+            for class_id, class_data in class_items:
+                row_cols = st.columns([3] + [2 for _ in crit_items])
+                with row_cols[0]:
+                    st.write(class_data.get("description", ""))
+
+                for idx, (crit_id, crit_data) in enumerate(crit_items, start=1):
+                    crit_class = crit_data.get("classes", {}).get(class_id, {})
+                    current = crit_class.get("alternative_term")
+                    if current not in options_alt and terms_alt:
+                        current = options_alt[0]
+                    with row_cols[idx]:
+                        value = st.selectbox(
+                            label=f"{class_data.get('description', class_id)} - {crit_data.get('criterion', crit_id)}",
+                            options=options_alt,
+                            index=options_alt.index(current) if current in options_alt else 0,
+                            key=f"{key_prefix}term_{crit_id}_{class_id}",
+                            label_visibility="collapsed",
+                        )
+                        if terms_alt and value != crit_class.get("alternative_term"):
+                            update_criterion_class(criteria, crit_id, class_id, "alternative_term", value)
+
+    if st.button("💾 Salvar Limiares", key=f"{key_prefix}save"):
+        errors = [
+            f"Critério {crit_id}: classe {class_id} sem termo mínimo de alternativa."
+            for crit_id, data in criteria.items()
+            for class_id, class_data in data.get("classes", {}).items()
+            if not class_data.get("alternative_term")
+        ]
+        if errors:
+            for error in errors:
+                st.error(error)
+        else:
+            st.session_state.criteria = copy.deepcopy(criteria)
+            st.session_state.next_cri_id = st.session_state.next_cri_id_draft
+            st.session_state.criteria_draft_signature = _draft_signature({
+                "criteria": st.session_state.criteria,
+                "next_cri_id": st.session_state.next_cri_id,
+                "classes": st.session_state.get("classes", {}),
+            })
+            save_current_project_snapshot()
+            st.success("Limiares salvos com sucesso!")

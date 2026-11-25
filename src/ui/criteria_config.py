@@ -165,7 +165,9 @@ def render_criteria():
     # Sincroniza caso classes tenham sido adicionadas/removidas ou renomeadas na primeira aba
     sync_classes_in_criteria(criteria, classes)
 
-    terms_alt = list(st.session_state.get("fuzzy_number_alternatives", {}).keys())
+    fuzzy_terms_alt = st.session_state.get("fuzzy_number_alternatives", {})
+    terms_alt = list(fuzzy_terms_alt.keys())
+    format_term = lambda term: fuzzy_terms_alt.get(term, {}).get("description", term)
     terms_peso = list(st.session_state.get("fuzzy_number_weights", {}).keys())
     
     options_alt = terms_alt if terms_alt else ["(Vazio)"]
@@ -323,7 +325,9 @@ def render_criteria_thresholds():
     criteria = st.session_state.criteria_draft
     classes = st.session_state.get("classes", {})
     sync_classes_in_criteria(criteria, classes)
-    terms_alt = list(st.session_state.get("fuzzy_number_alternatives", {}).keys())
+    fuzzy_terms_alt = st.session_state.get("fuzzy_number_alternatives", {})
+    terms_alt = list(fuzzy_terms_alt.keys())
+    format_term = lambda term: fuzzy_terms_alt.get(term, {}).get("description", term)
     options_alt = terms_alt if terms_alt else ["(Vazio)"]
 
     crit_items = list(criteria.items())
@@ -357,6 +361,7 @@ def render_criteria_thresholds():
                         value = st.selectbox(
                             label=f"{class_data.get('description', class_id)} - {crit_data.get('criterion', crit_id)}",
                             options=options_alt,
+                            format_func=format_term,
                             index=options_alt.index(current) if current in options_alt else 0,
                             key=f"{key_prefix}term_{crit_id}_{class_id}",
                             label_visibility="collapsed",

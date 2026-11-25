@@ -212,7 +212,7 @@ def main():
         elif secao == "Avaliação das Alternativas":
             selected_menu = st.radio(
                 "Opções de Avaliação:",
-                ["Alternativas", "Pesos", "Classes"],
+                ["Pesos", "Classes", "Alternativas"],
                 key="sidebar_menu_eval",
             )
         else:
